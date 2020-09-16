@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -euop pipefail
+# si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
+
+#PBS -q remod
+#PBS -l ncpus=8
+
+### Explication des parametres pour le cluster (PBS)
+# -q : notre noeud sur lequel on veut travailler
+# -l ncpus : nombre de cpus
+
+## Cluster utilise:
+cluster="Slurm"
+
+if [ "${cluster}" == "Torq" ]
+then
+
+## bout de code d'Emilie qui permet de faire fonctionner mon conda
+##source /home/emilie.drouineau/.bashrc
+  if [ -f "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh" ]; then
+      . "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh"
+      CONDA_CHANGEPS1=false conda activate
+  fi
+
+else [ "${cluster}" != "Torq" ]
+  echo "Ce n'est pas un cluster Torq"
+fi
+
+### Affichage de "start bowtie2" pour verifier que le script se lance bien
+echo "start bowtie2"
+
+### Activation de conda pour bowtie2
+conda activate bowtie2
+
+
+### Creation de variables
+genomeFastaFiles="/store/EQUIPES/REMOD/annotation/gencode_mm10/justChr_GRCm38.primary_assembly.genome.fa"
+genomeDir="/store/EQUIPES/REMOD/annotation/gencode_mm10/"
+
+### Lancement de la creation de l index avec bowtie2
+bowtie2-build ${genomeFastaFiles} ${genomeDir}mouse_index_marina \
+--threads 8
+
+
+### Explication des parametres choisis:
+# --threads : nombre de threads utilises (1 par defaut)
+# ${genomeFastaFiles} : fichier fasta du genome
+# ${genomeDir}mouse_index_marina : chemin et nom de l'index

@@ -1,0 +1,86 @@
+#!/bin/bash
+
+set -euop pipefail
+# si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
+
+
+## Cluster utilise:
+cluster="Slurm"
+
+if [ "${cluster}" == "Torq" ]
+then
+
+## bout de code d'Emilie qui permet de faire fonctionner mon conda
+##source /home/emilie.drouineau/.bashrc
+  if [ -f "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh" ]; then
+      . "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh"
+      CONDA_CHANGEPS1=false conda activate
+  fi
+
+else [ "${cluster}" != "Torq" ]
+  echo "Ce n'est pas un cluster Torq"
+fi
+
+
+### Affichage de "start fastp" pour verifier que le script se lance bien
+echo "start fastp"
+
+### Activation de conda pour fastp
+conda activate fastp
+
+### Affichage des nom de variables et de fichiers
+echo "${fastqFile1##*/}";
+echo "${fastqFile2##*/}";
+
+### Definition de variables:
+fastqFile="${fastqFile1/_R1.fastq.gz/}" # on garde juste le nom de "base" du fichier (on enleve read1 et l'extension)
+outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastQC/results"
+
+echo "${fastqFile##*/}" #*/ permet de supprimer tout ce qui est avant le dernier /
+echo "cleaned_filtered_${fastqFile1##*/}" #*/ permet de supprimer tout ce qui est avant le dernier / et ajoute du texte devant
+echo "cleaned_filtered_${fastqFile2##*/}" #*/ permet de supprimer tout ce qui est avant le dernier / et ajoute du texte devant
+echo "fastp_${fastqFile##*/}.json"
+
+echo '______________'
+echo "/store/EQUIPES/REMOD/200120_novogene/raw_data/${fastqFile1##*/} "
+echo "${fastqFile1}"
+echo '______________'
+
+### REMARQUES et EXPLICATIONS :
+# NE PAS OUBLIER QU'UN SCRIPT OUVRE UN SOUS-SHELL !!!!!!
+# pour les fichiers d'entree int1 et int2 il faut afficher le chemin complet
+# sampleFile="$(basename $fastqFile1)"  <==>  "${fastqFile1##*/}"
+# les guillemets permettent de signaler que la variable est une chaine de caracteres (au cas ou il y aurait des espaces dans le nom) : echapper des espaces
+
+### Lancement de fastp :
+
+fastp --thread 8 \
+--in1 "${fastqFile1}" \
+--in2 "${fastqFile2}" \
+--out1 "${outputDir}cleaned_filtered_${fastqFile1##*/}" \
+--out2 "${outputDir}cleaned_filtered_${fastqFile2##*/}" \
+--failed_out "${outputDir}failed_out_${fastqFile##*/}.txt" \
+--json "${outputDir}fastp_${fastqFile##*/}.json" \
+--html "${outputDir}fastp_${fastqFile##*/}.html" \
+--length_required 25 \
+2> "${outputDir}fichier_log_${fastqFile##*/}.txt"
+
+
+### Affichage de "done fastp" pour verifier que le script s est bien termine
+echo "done fastp"
+
+### Explications des options utilisees :
+# in1 : nom du fichier input read 1
+# in2 : nom du fichier input read 2
+# out1 : nom du fichier output read 1
+# out2 : nom du fichier output read 2
+## unpaired1 : pour l'input PE(paired-end), si read1 a passé QC mais pas read2, il sera écrit dans unpaired1. La valeur par défaut est de la supprimer.
+## unpaired2 : pour l'input PE(paired-end), si read2 a passé QC mais pas read1, il sera écrit dans unpaired2. La valeur par défaut est de la supprimer.
+# failed_out : specifie le fichier pour stocker les reads qui n'ont pas passé les filtres.
+# json : rapport de fastp au format .json
+# html : rapport de fastp au format .html
+# thread : 2 par défaut
+# length_required : taille minimum des reads de 25 pb
+# le trimming des adaptateurs est actif par defaut.
+
+# https://manpages.debian.org/testing/fastp/fastp.1.en.html

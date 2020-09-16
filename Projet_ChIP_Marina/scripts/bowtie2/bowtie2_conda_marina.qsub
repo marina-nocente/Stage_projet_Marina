@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -euop pipefail
+# si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
+
+#PBS -q remod
+#PBS -l ncpus=8
+
+### Explication des parametres pour le cluster (PBS)
+# -q : notre noeud sur lequel on veut travailler
+# -l ncpus : nombre de cpus
+
+## Cluster utilise:
+cluster="Slurm"
+
+if [ "${cluster}" == "Torq" ]
+then
+
+## bout de code d'Emilie qui permet de faire fonctionner mon conda
+##source /home/emilie.drouineau/.bashrc
+  if [ -f "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh" ]; then
+      . "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh"
+      CONDA_CHANGEPS1=false conda activate
+  fi
+
+else [ "${cluster}" != "Torq" ]
+  echo "Ce n'est pas un cluster Torq"
+fi
+
+
+### Affichage de "start bowtie2" pour verifier que le script se lance bien
+echo "start bowtie2"
+
+### Activation de conda pour bowtie2
+conda activate bowtie2
+
+
+### Utilisation de bowtie2 pour l'alignement:
+
+
+bowtie2 \
+-x /store/EQUIPES/REMOD/annotation/gencode_mm10/mouse_index \
+-1 "${fastqFile1}" \
+-2 "${fastqFile2}" \
+-b ${outputDir}${fastqFile##*/}.bam \
+-p 8 \
+--align-paired-reads
+
+
+  2> "${outputDir}${fastqFile##*/}fichier_log.txt"
+
+
+### Explication des parametres:
+# -x : le nom de l'index pour le génome de référence
+# -1 : liste de fichiers des reads 1 (nettoyes)
+# -2 : liste de fichiers des reads 2 (nettoyes)
+# -U : liste de fichiers contenant les reads non paired
+# -b : les reads alignés sont au format bam
+# -p : nombre de threads (par defaut 1)
+# --align-paired-reads : par defaut, Bowtie 2 essaiera d apparier les reads non appariées. Cette option permet d aligner les reads appariés.
+# on laisse un alignement local par defaut.
