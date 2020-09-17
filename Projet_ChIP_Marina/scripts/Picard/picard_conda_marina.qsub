@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -euop pipefail
+# si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
+
+
+## Cluster utilise:
+cluster="Slurm"
+
+if [ "${cluster}" == "Torq" ]
+then
+
+## bout de code d'Emilie qui permet de faire fonctionner mon conda
+##source /home/emilie.drouineau/.bashrc
+  if [ -f "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh" ]; then
+      . "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh"
+      CONDA_CHANGEPS1=false conda activate
+  fi
+
+else [ "${cluster}" != "Torq" ]
+  echo "Ce n'est pas un cluster Torq"
+fi
+
+
+### Affichage de "start samtools_sort" pour verifier que le script se lance bien
+echo "start Picard"
+
+picard MarkDuplicates \
+    INPUT=${bamFile} \
+    OUTPUT="Marked_duplicate_${bamFile}" \
+    METRICS_FILE="marked_duplicate_metrics.txt" \
+
+
+### Aide : https://broadinstitute.github.io/picard/command-line-overview.html#MarkDuplicates
+# INPUT : Fichiers input SAM ou BAM a analyser. DOIT ETRE TRIE PAR COORDONNES.
+# OUTPUT : fichier de sortie pour ecrire les duplicat
+# METRICS_FILE : fichier pour ecrire les metriques de duplication
+
+
+echo "end Picard"

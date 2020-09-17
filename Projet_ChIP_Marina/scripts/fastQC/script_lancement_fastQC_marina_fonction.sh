@@ -7,7 +7,7 @@ set -euop pipefail
 source /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/scripts/fonction_parler_cluster.sh
 
 ## Repertoire qui contiendra les resultats de fastQC:
-outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastQC/results"
+outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/samtools_flagstat/results"
 
 ## Cluster utilise:
 cluster="Slurm"

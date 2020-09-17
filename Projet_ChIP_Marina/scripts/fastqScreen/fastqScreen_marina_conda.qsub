@@ -28,7 +28,7 @@ conda activate fastqScreen
 echo "start fastqScreen"
 
 
-fastq_screen ${fastqFile} --threads 1 --conf ${fastqScreenConf} --outdir ${outputDir}
+fastq_screen ${fastqFile} --threads 8 --conf ${fastqScreenConf} --outdir ${outputDir}
 
 
 ## Affichage de "done fastqcScreen" pour verifier que le script s est bien termine

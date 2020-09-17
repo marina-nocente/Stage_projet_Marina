@@ -3,8 +3,6 @@
 set -euop pipefail
 # si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
 
-source /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/scripts/fonction_parler_cluster.sh
-
 
 ## Cluster utilise:
 cluster="Slurm"
@@ -29,8 +27,6 @@ echo "start bowtie2"
 
 ### Activation de conda pour bowtie2
 conda activate bowtie2
-
-
 
 ## Definition du repertoire de sortie pour les resultats de bowtie2:
 outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/bowtie2/results"
