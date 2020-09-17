@@ -3,38 +3,34 @@
 set -euop pipefail
 # si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
 
-### Explication des parametres pour le cluster (PBS)
-## notre noeud
-#PBS -q remod
-
-## nombre de cpu par job
-#PBS -l ncpus=8
+# Appelle de ma fonction pour les parametres du cluster et lance un script
+source /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/scripts/fonction_parler_cluster.sh
 
 ### Definition de variables:
-outputDir="/store/EQUIPES/REMOD/200120_novogene/Marina/RNA-seq/fastqScreen"
+outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastqScreen/results"
 fastqScreenConf="/store/EQUIPES/REMOD/scripts/fastq_screen.conf"
 cluster="Slurm"
 
 ## Pour mon fichier dans ma liste de fichiers: faire:
-for fastqFile in /store/EQUIPES/REMOD/200120_novogene/Marina/RNA-seq/fastq_sans_rRNA/cleaned_filtered_C57_*.fastq; do
+for fastqFile in /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/fichiers_test/*.fastq.gz; do
 
   # Afficher le nom du fichier en cours de traitement:
   echo "${fastqFile}";
 
-  if [ "${cluster}" == "Torq" ]
+  if [ "${cluster}" == "Torque" ]
   then
-    # Lancer le script fastScreen:
-    qsub /store/EQUIPES/REMOD/200120_novogene/Marina/fastqScreen_marina_conda.qsub \
-    -o "${outputDir}" \ # le repertoire de sortie ou fastp va ecrire les nouveaux fichiers
-    -e  "${outputDir}" \ # le chemin pour le flux d'erreur standard
-    -v "fastqFile='${fastqFile}',outputDir='${outputDir}',fastqScreenConf='${fastqScreenConf}'"
+    # chemin vers mon script
+    parler_cluster_Torq /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastScreen/fastqScreen_marina_conda.qsub \
+    "fastqFile='${fastqFile}',outputDir='${outputDir}'" \ # mes variables
+    "${outputDir}" # mon repertoire de sortie pour la sortie standard et erreur
+
 
   elif [ "${cluster}" == "Slurm" ]
   then
-    sbatch /store/EQUIPES/REMOD/200120_novogene/Marina/fastqScreen_marina_conda.qsub \
-    -o "${outputDir}" \ # le repertoire de sortie ou fastp va ecrire les nouveaux fichiers
-    -e  "${outputDir}" \ # le chemin pour le flux d erreur standard
-    --export "fastqFile='${fastqFile}',outputDir='${outputDir}',fastqScreenConf='${fastqScreenConf}'"
+    # chemin vers mon script
+    parler_cluster_Slurm /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastScreen/fastqScreen_marina_conda.qsub \
+    "fastqFile='${fastqFile}',outputDir='${outputDir}'" # mes variables
+
 
   else [ "${cluster}" == "" ]
     echo "Preciser le nom du cluster utilise"

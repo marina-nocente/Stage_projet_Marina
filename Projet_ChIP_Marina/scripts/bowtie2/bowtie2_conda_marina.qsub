@@ -3,12 +3,8 @@
 set -euop pipefail
 # si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
 
-#PBS -q remod
-#PBS -l ncpus=8
+source /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/scripts/fonction_parler_cluster.sh
 
-### Explication des parametres pour le cluster (PBS)
-# -q : notre noeud sur lequel on veut travailler
-# -l ncpus : nombre de cpus
 
 ## Cluster utilise:
 cluster="Slurm"
@@ -35,19 +31,23 @@ echo "start bowtie2"
 conda activate bowtie2
 
 
+
+## Definition du repertoire de sortie pour les resultats de bowtie2:
+outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/bowtie2/results"
+
+
 ### Utilisation de bowtie2 pour l'alignement:
 
-
 bowtie2 \
--x /store/EQUIPES/REMOD/annotation/gencode_mm10/mouse_index \
--1 "${fastqFile1}" \
--2 "${fastqFile2}" \
--b ${outputDir}${fastqFile##*/}.bam \
+-x /store/EQUIPES/REMOD/annotation/gencode_mm10/mouse_index \ #repertoire ou est l index
+-1 "${fastqFileR1}" \
+-2 "${fastqFileR2}" \
+-b ${outputDir}${nom_ech}.bam \
 -p 8 \
 --align-paired-reads
 
 
-  2> "${outputDir}${fastqFile##*/}fichier_log.txt"
+  2> "${outputDir}${nom_ech}_fichier_log.txt"
 
 
 ### Explication des parametres:

@@ -32,7 +32,7 @@ echo "start fastqc"
 echo "${fastqFile}"
 
 ## Lancement de fastQC :
-fastqc "${fastqFile}" -t 8 -outdir "${outputDir}"
+fastqc "${fastqFile}" -t 1 -outdir "${outputDir}"
 
 ## Explication des parametres utilises:
 # ${fastqFile} : la liste des fichiers fastq

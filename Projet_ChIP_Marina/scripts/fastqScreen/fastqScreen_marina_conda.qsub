@@ -3,12 +3,6 @@
 set -euop pipefail
 # si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
 
-#PBS -q remod
-#PBS -l ncpus=8
-
-## Explication des parametres pour le cluster (PBS)
-# -q : notre noeud sur lequel on veut travailler
-# -l ncpus : nombre de cpus
 
 ## Cluster utilise:
 cluster="Slurm"
@@ -34,7 +28,7 @@ conda activate fastqScreen
 echo "start fastqScreen"
 
 
-fastq_screen ${fastqFile} --threads 8 --conf ${fastqScreenConf} --outdir ${outputDir}
+fastq_screen ${fastqFile} --threads 1 --conf ${fastqScreenConf} --outdir ${outputDir}
 
 
 ## Affichage de "done fastqcScreen" pour verifier que le script s est bien termine

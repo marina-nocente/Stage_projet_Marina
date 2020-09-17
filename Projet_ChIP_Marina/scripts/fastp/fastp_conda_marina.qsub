@@ -29,22 +29,20 @@ echo "start fastp"
 conda activate fastp
 
 ### Affichage des nom de variables et de fichiers
-echo "${fastqFile1##*/}";
-echo "${fastqFile2##*/}";
+echo "${fastqFileR1}";
+echo "${fastqFileR2}";
+echo "${R1}";
+echo "${R2}";
 
 ### Definition de variables:
-fastqFile="${fastqFile1/_R1.fastq.gz/}" # on garde juste le nom de "base" du fichier (on enleve read1 et l'extension)
-outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastQC/results"
+#fastqFile="${fastqFile1/_R1.fastq.gz/}" # on garde juste le nom de "base" du fichier (on enleve read1 et l'extension)
+outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastp/results"
 
-echo "${fastqFile##*/}" #*/ permet de supprimer tout ce qui est avant le dernier /
-echo "cleaned_filtered_${fastqFile1##*/}" #*/ permet de supprimer tout ce qui est avant le dernier / et ajoute du texte devant
-echo "cleaned_filtered_${fastqFile2##*/}" #*/ permet de supprimer tout ce qui est avant le dernier / et ajoute du texte devant
-echo "fastp_${fastqFile##*/}.json"
+#echo "${fastqFile##*/}" #*/ permet de supprimer tout ce qui est avant le dernier /
+#echo "cleaned_filtered_${fastqFile1##*/}" #*/ permet de supprimer tout ce qui est avant le dernier / et ajoute du texte devant
+#echo "cleaned_filtered_${fastqFile2##*/}" #*/ permet de supprimer tout ce qui est avant le dernier / et ajoute du texte devant
+#echo "fastp_${fastqFile##*/}.json"
 
-echo '______________'
-echo "/store/EQUIPES/REMOD/200120_novogene/raw_data/${fastqFile1##*/} "
-echo "${fastqFile1}"
-echo '______________'
 
 ### REMARQUES et EXPLICATIONS :
 # NE PAS OUBLIER QU'UN SCRIPT OUVRE UN SOUS-SHELL !!!!!!
@@ -55,15 +53,15 @@ echo '______________'
 ### Lancement de fastp :
 
 fastp --thread 8 \
---in1 "${fastqFile1}" \
---in2 "${fastqFile2}" \
---out1 "${outputDir}cleaned_filtered_${fastqFile1##*/}" \
---out2 "${outputDir}cleaned_filtered_${fastqFile2##*/}" \
---failed_out "${outputDir}failed_out_${fastqFile##*/}.txt" \
---json "${outputDir}fastp_${fastqFile##*/}.json" \
---html "${outputDir}fastp_${fastqFile##*/}.html" \
+--in1 "${fastqFileR1}" \
+--in2 "${fastqFileR2}" \
+--out1 "${outputDir}cleaned_filtered_${R1}" \
+--out2 "${outputDir}cleaned_filtered_${R2}" \
+--failed_out "${outputDir}failed_out_${nom_ech}.txt" \
+--json "${outputDir}fastp_${nom_ech}.json" \
+--html "${outputDir}fastp_${nom_ech}.html" \
 --length_required 25 \
-2> "${outputDir}fichier_log_${fastqFile##*/}.txt"
+2> "${outputDir}fichier_log_${nom_ech}.txt"
 
 
 ### Affichage de "done fastp" pour verifier que le script s est bien termine

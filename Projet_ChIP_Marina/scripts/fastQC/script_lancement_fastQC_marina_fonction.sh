@@ -4,7 +4,7 @@ set -euop pipefail
 # si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
 
 # Appelle de ma fonction pour les parametres du cluster et lance un script
-source /home/mnocente/Bureau/fonction_parler_cluster.sh
+source /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/scripts/fonction_parler_cluster.sh
 
 ## Repertoire qui contiendra les resultats de fastQC:
 outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastQC/results"
@@ -17,12 +17,12 @@ cluster="Slurm"
 
 
 ## Pour mon fichier dans ma liste de fichiers: faire:
-for fastqFile in /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastQC/test/*.fastq; do
+for fastqFile in /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/fichiers_test/*.fastq.gz; do
 
   # Afficher le fichier traite:
   echo "${fastqFile}";
 
-  if [ "${cluster}" == "Torq" ]
+  if [ "${cluster}" == "Torque" ]
   then
     # chemin vers mon script
     parler_cluster_Torq /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastQC/fastQC_conda_marina.qsub \
