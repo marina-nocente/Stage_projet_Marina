@@ -31,7 +31,7 @@ echo "start samtools flagstat"
 echo "${bamFile}"
 ech "${outputDir}"
 
-samtools flagstat ${bamFile} > "${outputDir}${bamFile##*}_flagstat.txt"
+samtools flagstat ${bamFile} > "${outputDir}${bamFile##*/}_flagstat.txt"
 
 
 echo "done samtools flagstat"

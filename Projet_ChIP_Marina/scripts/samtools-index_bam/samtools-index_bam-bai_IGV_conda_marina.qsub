@@ -21,23 +21,17 @@ else [ "${cluster}" != "Torq" ]
   echo "Ce n'est pas un cluster Torq"
 fi
 
+## Definition du repertoire de sortie pour les resultats:
+outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/samtools-index_bam/results"
 
-### Affichage de "start samtools_sort" pour verifier que le script se lance bien
-echo "start Picard"
+### Affichage de "start samtools" pour verifier que le script se lance bien
+echo "start samtools"
 
-### Activation de conda pour picard
-conda activate picard
-
-picard MarkDuplicates \
-    INPUT=${bamFile} \
-    OUTPUT="Marked_duplicate_${bamFile}" \
-    METRICS_FILE="marked_duplicate_metrics.txt" \
+### Activation de conda pour samtools
+conda activate samtools
 
 
-### Aide : https://broadinstitute.github.io/picard/command-line-overview.html#MarkDuplicates
-# INPUT : Fichiers input SAM ou BAM a analyser. DOIT ETRE TRIE PAR COORDONNES.
-# OUTPUT : fichier de sortie pour ecrire les duplicat
-# METRICS_FILE : fichier pour ecrire les metriques de duplication
+samtools index ${bamFile} -b "${outputDir}indexed_${bamFile##*/}.bai"
 
 
-echo "end Picard"
+echo "end samtools"

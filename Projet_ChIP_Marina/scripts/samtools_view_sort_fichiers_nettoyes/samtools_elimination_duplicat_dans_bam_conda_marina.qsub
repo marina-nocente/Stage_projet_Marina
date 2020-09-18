@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -euop pipefail
+# si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
+
+
+## Cluster utilise:
+cluster="Slurm"
+
+if [ "${cluster}" == "Torq" ]
+then
+
+## bout de code d'Emilie qui permet de faire fonctionner mon conda
+##source /home/emilie.drouineau/.bashrc
+  if [ -f "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh" ]; then
+      . "/home/marina.nocente/miniconda2/etc/profile.d/conda.sh"
+      CONDA_CHANGEPS1=false conda activate
+  fi
+
+else [ "${cluster}" != "Torq" ]
+  echo "Ce n'est pas un cluster Torq"
+fi
+
+## Definition du repertoire de sortie pour les resultats:
+outputDir="/Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/scripts/samtools_view_sort_fichiers_nettoyes/results"
+
+### Affichage de "start samtools_sort" pour verifier que le script se lance bien
+echo "start samtools"
+
+### Activation de conda pour samtools
+conda activate samtools
+
+samtools view -h ${bamFile} | \
+  awk '{if ($2 == 99 || $2 == 147 || $2 == 83 || $2 == 163 || $0 ~"^@") print $0 }' | \
+  samtools sort | \
+  samtools view -bh -o "${outputDir}filtered_${bamFile##*/}"
+
+### Explication des parametres:
+# samtools view permet d’afficher le BAM en SAM, -h pour lire aussi le header.
+# awk traite et nettoie les données en colonnes :
+# « si la colonne 2 (=SAM flag) est égale à 99 ou 147 ou 83 ou 163 ou la ligne ($0) qui commence exactement par @, écrire la ligne, écrire la ligne
+# samtools sort trie en fonction des coordonnees des chromosomes (si on veut le nom c est -n)
+# samtools view convertit le fichier en BAM (-b) filtré en gardant le header (-h) et un output (-o).
+
+
+### Explications des SAM-flag:
+# 99, 147, 83, 163 : Mapped within the insert size and in correct orientation (https://www.samformat.info/sam-format-flag)
+
+echo "end samtools"
