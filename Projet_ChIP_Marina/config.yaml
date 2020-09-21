@@ -1,0 +1,53 @@
+outputdir: ${PWD}/results
+references:
+    genome: #chemin du genome de ref
+    annot: #chemin de l annotation
+    index: #chemin du genome de l index
+threads: 8
+datadir: ${PWD}/raw_data
+samples:
+    Oct4_rep1:
+        r1: ChIPseq_Oct4_rep1_1.fastq.gz
+        r2: ChIPseq_Oct4_rep1_2.fastq.gz
+    Oct4_rep2:
+        r1: ChIPseq_Oct4_rep2_1.fastq.gz
+        r2: ChIPseq_Oct4_rep2_2.fastq.gz
+
+    TBP_rep1:
+        r1: ChIPseq_TBP_rep1_1.fastq.gz
+        r2: ChIPseq_TBP_rep1_2.fastq.gz
+
+    TBP_rep2:
+        r1: ChIPseq_TBP_rep2_1.fastq.gz
+        r2: ChIPseq_TBP_rep2_2.fastq.gz
+
+    Pol2_rep1:
+        r1: ChIPseq_Pol2_rep1_1.fastq.gz
+        r2: ChIPseq_Pol2_rep1_2.fastq.gz
+    Pol2_rep2:
+        r1: ChIPseq_Pol2_rep2_1.fastq.gz
+        r2: ChIPseq_Pol2_rep2_2.fastq.gz
+
+    CTCF:
+        r1: ChIPseq_CTCF_1.fastq.gz
+        r2: ChIPseq_CTCF_2.fastq.gz
+
+    Chd8_rep1:
+        r1: ChIPtandem_Chd8_rep1_1.fastq.gz
+        r2: ChIPtandem_Chd8_rep1_2.fastq.gz
+
+    Chd8_rep2:
+        r1: ChIPtandem_Chd8_rep2_1.fastq.gz
+        r2: ChIPtandem_Chd8_rep2_2.fastq.gz
+
+# samples: ["ChIPseq_Oct4_rep1_1.fastq.gz", "ChIPseq_Oct4_rep1_2.fastq.gz", "ChIPseq_Oct4_rep2_1.fastq.gz", "ChIPseq_Oct4_rep2_2.fastq.gz", "ChIPseq_TBP_rep1_1.fastq.gz", "ChIPseq_TBP_rep1_2.fastq.gz", "ChIPseq_TBP_rep2_1.fastq.gz", "ChIPseq_TBP_rep2_2.fastq.gz", "ChIPseq_Pol2_rep1_1.fastq.gz", "ChIPseq_Pol2_rep1_2.fastq.gz", "ChIPseq_Pol2_rep2_1.fastq.gz", "ChIPseq_Pol2_rep2_2.fastq.gz", "ChIPseq_CTCF_1.fastq.gz", "ChIPseq_CTCF_2.fastq.gz", "ChIPtandem_Chd8_rep1_1.fastq.gz", "ChIPtandem_Chd8_rep1_2.fastq.gz", "ChIPtandem_Chd8_rep2_1.fastq.gz", "ChIPtandem_Chd8_rep2_2.fastq.gz"]
+
+fastqc:
+    threads: 1 # en pratique ca ne sert a rien de mettre ce parametre car il est deja par defaut.
+fastp:
+    thread: 8
+    extra: "--length_required 25 --detect_adapter_for_pe"
+fastqscreen:
+    config: /store/EQUIPES/REMOD/scripts/fastq_screen.conf
+    threads: 8
+    aligner: "bowtie2"

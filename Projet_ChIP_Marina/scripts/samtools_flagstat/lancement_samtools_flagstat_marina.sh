@@ -4,22 +4,22 @@ set -euop pipefail
 # si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
 
 # Appelle de ma fonction pour les parametres du cluster et lance un script
-source /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/scripts/fonction_parler_cluster.sh
+source ./scripts/fonction_parler_cluster.sh
 
 ### Definition de variables:
-outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/samtools_flagstat/results"
+outputDir="${PWD}/results/samtools_flagstat"
 
 cluster="Slurm"
 
 ## Pour mon fichier dans ma liste de fichiers: faire:
-for bamFile in /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/fichiers_test/*.bam ; do
+for bamFile in ${PWD}/results/bowtie2/*.bam ; do
 	echo "${bamFile}";
 
 
 	if [ "${cluster}" == "Torque" ]
 	then
 		# chemin vers mon script
-		parler_cluster_Torq /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/samtools_flagstat/samtools_flagstat_conda_marina.qsub \
+		parler_cluster_Torq ${PWD}/scripts/samtools_flagstat/samtools_flagstat_conda_marina.qsub \
 		"bamFile='${bamFile}',outputDir='${outputDir}'" \ # mes variables
 		"${outputDir}" # mon repertoire de sortie pour la sortie standard et erreur
 
@@ -27,7 +27,7 @@ for bamFile in /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/fi
 	elif [ "${cluster}" == "Slurm" ]
 	then
 		# chemin vers mon script
-		parler_cluster_Slurm /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/samtools_flagstat/samtools_flagstat_conda_marina.qsub \
+		parler_cluster_Slurm ${PWD}/scripts/samtools_flagstat/samtools_flagstat_conda_marina.qsub \
 		"bamFile='${bamFile}',outputDir='${outputDir}'" # mes variables
 
 

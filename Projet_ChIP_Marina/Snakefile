@@ -1,0 +1,200 @@
+### Snakefile Marina stage IGR septembre 2020 : analyses de ChIP-seq ###
+"""
+Script Python à mettre avant la rule all pour interpréter les samples dans le fichier de config
+et lister les echantillons.
+"""
+
+import os.path as op # permet de faciliter l acces aux chemins de fichier etc
+import sys
+
+# pour appeler le fichier config
+configfile: "./config.yaml"
+
+print(config["samples"]["Oct4_rep1"]["r1"])
+print(config["samples"].keys())
+
+
+# Faire une liste de mes fastq files à partir de ma liste d echantillons
+list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
+STREAM = ["1", "2"]
+
+list_fastq = []
+
+for ech in list_sample:
+    #print(ech)
+    for sens in STREAM:
+        list_fastq.append("ChIPseq_" + ech + "_" + sens)
+print(list_fastq)
+sample_wildcard_test = "|".join(list_fastq)
+
+print(sample_wildcard_test)
+
+## On ne fait pas confiance aux ordis! On precise le nom des fichiers
+
+
+wildcard_constraints:
+    sample_wildcard = "ChIPseq_Oct4_rep1_1|ChIPseq_Oct4_rep1_2|ChIPseq_Oct4_rep2_1|ChIPseq_Oct4_rep2_2|ChIPseq_TBP_rep1_1|ChIPseq_TBP_rep1_2|ChIPseq_TBP_rep2_1|ChIPseq_TBP_rep2_2|ChIPseq_Pol2_rep1_1|ChIPseq_Pol2_rep1_2|ChIPseq_Pol2_rep2_1|ChIPseq_Pol2_rep2_2|ChIPseq_CTCF_1|ChIPseq_CTCF_2|ChIPtandem_Chd8_rep1_1|ChIPtandem_Chd8_rep1_2|ChIPtandem_Chd8_rep2_1|ChIPtandem_Chd8_rep2_2",
+    sample = "ChIPseq_Oct4_rep1|ChIPseq_Oct4_rep2|ChIPseq_TBP_rep1|ChIPseq_TBP_rep2|ChIPseq_Pol2_rep1|ChIPseq_Pol2_rep2|ChIPseq_CTCF|ChIPtandem_Chd8_rep1|ChIPtandem_Chd8_rep2"
+
+
+# il faut faire des noms de fichiers uniformes, c est plus facile
+# pour liste les echantillons, on commence par des guillemets doucles, puis on ecrit les echantillons separes par des pipes mais SANS espace.
+
+
+## On peut faire un raport final:
+report: "report_analyse_ChIP-seq_Marina.rst"
+
+
+
+
+
+#############################################################
+
+
+
+# def getSamplePaired(samples):
+#     dataDir = config["datadir"]
+#     #print(samples)
+#     sample = []
+#     endExt = {}
+#     for sam in samples:
+#         startSam = op.commonprefix([samples[sam]["r1"], samples[sam]["r2"]])
+#         sample.append(startSam)
+#         r1 = op.join(dataDir, samples[sam]["r1"])
+#         r2 = op.join(dataDir, samples[sam]["r2"])
+#         endExt[startSam] = [r1, r2]
+#     return(sample, endExt)
+#
+# SAMPLE, endExt = getSamplePaired(config["samples"])
+# print(SAMPLE)
+# SAMPLE_ID = []
+# for i in SAMPLE:
+#     r1 = i+"1"
+#     r2 = i+"2"
+#     SAMPLE_ID.append(r1)
+#     SAMPLE_ID.append(r2)
+# print(SAMPLE_ID)
+#
+# if "--cluster" in sys.argv or "-c" in sys.argv :
+#     print("cluster mode")
+#     shell.prefix("set -ieuop pipefail; ")
+#
+#
+#
+# """
+# La toute premiere regle, c'est ce que je veux a la fin (comme en cuisine: mon gateau!):
+# """
+# shell.prefix("set -ieuop pipefail; ")
+#
+# #SAMPLE_ID = ["ChIPseq_Oct4_rep1_1", "ChIPseq_Oct4_rep1_2", "ChIPseq_Oct4_rep2_1", "ChIPseq_Oct4_rep2_2", "ChIPseq_TBP_rep1_1", "ChIPseq_TBP_rep1_2", "ChIPseq_TBP_rep2_1", "ChIPseq_TBP_rep2_2", "ChIPseq_Pol2_rep1_1", "ChIPseq_Pol2_rep1_2", "ChIPseq_Pol2_rep2_1", "ChIPseq_Pol2_rep2_2", "ChIPseq_CTCF_1", "ChIPseq_CTCF_2", "ChIPtandem_Chd8_rep1_1", "ChIPtandem_Chd8_rep1_2", "ChIPtandem_Chd8_rep2_1", "ChIPtandem_Chd8_rep2_2"]
+#
+# SAMPLE = ["ChIPseq_Oct4_rep1", "ChIPseq_Oct4_rep2", "ChIPseq_TBP_rep1", "ChIPseq_TBP_rep2", "ChIPseq_Pol2_rep1", "ChIPseq_Pol2_rep2", "ChIPseq_CTCF", "ChIPtandem_Chd8_rep1", "ChIPtandem_Chd8_rep2"]
+# STREAM = ["1", "2"]
+#
+# for ech in SAMPLE:
+#     #print(ech)
+#     for sens in STREAM:
+#         #print(sens)
+#         Fastq_name_liste.append(ech + "_" + sens)
+# print(Fastq_name_liste)
+#
+#
+# rule all:
+#     input:
+#         expand(op.join(config["outputdir"], "QC", "fastqc", "{sample_wildcard}_fastqc.html"), sample_wildcard=Fastq_name_liste),
+#         expand(op.join(config["outputdir"], "QC", "fastqc", "{sample_wildcard}_fastqc.zip"), sample_wildcard=Fastq_name_liste),
+#         expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
+#         expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
+#         expand(op.join(config["outputdir"], "fastp", "{sample_wildcard}_1_fastp.fastq.gz"), sample_wildcard=SAMPLE),
+#         expand(op.join(config["outputdir"], "fastp", "{sample_wildcard}_2_fastp.fastq.gz"), sample_wildcard=SAMPLE),
+#         expand(op.join(config["outputdir"], "fastp", "failed_out_{sample_wildcard}.txt"), sample_wildcard=SAMPLE),
+#         expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.json"), sample_wildcard=SAMPLE),
+#         expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.html"), sample_wildcard=SAMPLE)
+#
+#
+
+##############################################################
+
+#
+# """
+# Cette regle realise l'analyse FastQC de mes fichiers fastq.gz avant trimming
+# """
+# rule fastqc:
+#     input:
+#         r = op.join(config["datadir"], "{sample_wildcard}.fastq.gz")
+#     output:
+#         report(op.join(config["outputdir"], "fastqc", "{sample_wildcard}_fastqc.html"), category="FastQC Reports", caption="fastqc.rst"),
+#         report(op.join(config["outputdir"], "fastqc", "{sample_wildcard}_fastqc.zip"), category="FastQC Reports", caption="fastqc.rst")
+#     message:
+#         "On controle la qualite avant trimming de {input}"
+#     conda:
+#         "fastqc.yaml"
+#     threads:
+#         config["fastqc"]["threads"]
+#     log:
+#         op.join(config["outputdir"], "fastqc", "logs", "{sample_wildcard}.log")
+#     params:
+#         outdir = op.join(config["outputdir"], "fastqc")
+#
+#     shell:
+#         "fastqc {input.r} --outdir {params.outdir} --threads {threads} &> {log}"
+
+#
+# """
+# Cette regle realise l'analyse FastqScreen de mes fichiers fastq.gz avant trimming
+# """
+# rule fastqScreen:
+#     input:
+#         r = op.join(config["datadir"], "{Fastq_name_liste}.fastq.gz")
+#     output:
+#         report(op.join(config["outputdir"], "fastqScreen", "{Fastq_name_liste}_screen.html"), category="FastqScreen Reports", caption="fastqScreen.rst"),
+#         report(op.join(config["outputdir"], "fastqScreen", "{Fastq_name_liste}_screen.txt"), category="FastqScreen Reports", caption="fastqScreen.rst")
+#     message:
+#         "fastqscreen avant trimming de {input}"
+#     conda:
+#         "fastqScreen.yaml"
+#     threads:
+#         config["fastqscreen"]["threads"]
+#     log:
+#         op.join(config["outputdir"], "fastqScreen", "logs", "{Fastq_name_liste}.log")
+#     params:
+#         outdir = op.join(config["outputdir"], "fastqScreen"),
+#         conf = config["fastqscreen"]["config"],
+#         aligner = config["fastqscreen"]["aligner"]
+#     shell:
+#         "fastq_screen {input.r} --outdir {params.outdir} --threads {threads} --aligner {params.aligner}  --conf {params.conf} &> {log}"
+#
+#
+#
+# """
+# Cette regle realise le trimming de mes echantillons fastq.gz pour eliminer les adaptateurs
+# """
+# rule fastp:
+#     input:
+#         r1 = op.join(config["datadir"], "{SAMPLE}_1.fastq.gz"),
+#         r2 = op.join(config["datadir"], "{SAMPLE}_2.fastq.gz")
+#     output:
+#         fastp_r1 = op.join(config["outputdir"], "fastp", "cleaned_filtered_{SAMPLE}_1.fastq.gz"),
+#         fastp_r2 = op.join(config["outputdir"], "fastp", "cleaned_filtered_{SAMPLE}_2.fastq.gz"),
+#         fastp_filed_out = op.join(config["outputdir"], "fastp", "failed_out_{SAMPLE}.txt"),
+#         fastp_json = report(op.join(config["outputdir"], "fastp", "fastp_{SAMPLE}.json"), category="Fastp Reports", caption="fastp.rst"),
+#         fastp_html = report(op.join(config["outputdir"], "fastp", "fastp_{SAMPLE}.html"), category="Fastp Reports", caption="fastp.rst")
+#     message:
+#         "Etape de trimming : on elimine les adaptateurs de {input}"
+#     conda:
+#         "fastp.yaml"
+#     threads:
+#         config["fastp"]["thread"]
+#     log:
+#         op.join(config["outputdir"], "fastp", "logs", "fichier_log_{sample}.log")
+#     params:
+#         extra = config["fastp"]["extra"]
+#     shell:
+#         "fastp --in1 {input.r1} --in2 {input.r2} --out1 {output.fastp_r1} --out2 {output.fastp_r2} --failed_out {output.fastp_filed_out} --json {output.fastp_json} --html {output.fastp_html} --thread {threads} {params.extra} &> {log}"
+#
+#
+#
+#
+# """
+# Cette regle realise le mapping de mes echantillons fastq.gz trimmés sur le génome de la souris
+# """

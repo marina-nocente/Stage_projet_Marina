@@ -36,7 +36,7 @@ echo "${R2}";
 
 ### Definition de variables:
 #fastqFile="${fastqFile1/_R1.fastq.gz/}" # on garde juste le nom de "base" du fichier (on enleve read1 et l'extension)
-outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastp/results"
+outputDir="${PWD}/results/fastp"
 
 #echo "${fastqFile##*/}" #*/ permet de supprimer tout ce qui est avant le dernier /
 #echo "cleaned_filtered_${fastqFile1##*/}" #*/ permet de supprimer tout ce qui est avant le dernier / et ajoute du texte devant

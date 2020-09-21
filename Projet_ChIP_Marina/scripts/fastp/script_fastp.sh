@@ -4,7 +4,7 @@ set -euop pipefail
 # si il y a une erreur, ou qu'une variable n'est pas definie, ou que le chemin n'est pas bien defini, ou si un pipe a un probleme il va s'arreter tout de suite
 
 
-source /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/scripts/fonction_parler_cluster.sh
+source ./scripts/fonction_parler_cluster.sh
 
 # J'ai une liste de 2 échantillons.
 liste="1 2"
@@ -20,7 +20,7 @@ echo $R1
 R2="${nom_ech}_R2.fastq.gz"
 echo $R2
 
-prefix="/Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/fichiers_test"
+prefix="${PWD}/raw_data"
 #echo $prefix
 
 #J'obtiens alors 2 paires de fichiers avec leur chemin
@@ -36,7 +36,7 @@ R2_path="${prefix}/$R2"
 if [ -f  ${R1_path} ]
 then
     echo "Mes fichiers existent"
-    parler_cluster_Slurm /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastp/fastp_conda_marina.qsub "fastqFileR1='${R1_path},fastqFileR2='${R2_path}'"
+    parler_cluster_Slurm ${PWD}/scripts/fastp/fastp_conda_marina.qsub "fastqFileR1='${R1_path},fastqFileR2='${R2_path}'"
 
 else
     echo "Mes fichiers n'existent pas"
@@ -45,7 +45,7 @@ fi
 if [ -f  ${R2_path} ]
 then
     echo "Mes fichiers existent"
-    #parler_cluster_Slurm /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/fastp/fastp_conda_marina.qsub "fastqFileR1='${R1_path},fastqFileR2='${R2_path}'"
+    #parler_cluster_Slurm ${PWD}/scripts/fastp/fastp_conda_marina.qsub "fastqFileR1='${R1_path},fastqFileR2='${R2_path}'"
 else
     echo "Mes fichiers n'existent pas"
 fi

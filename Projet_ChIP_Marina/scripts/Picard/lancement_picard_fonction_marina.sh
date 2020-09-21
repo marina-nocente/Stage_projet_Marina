@@ -7,19 +7,19 @@ set -euop pipefail
 source /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/scripts/fonction_parler_cluster.sh
 
 ### Definition de variables:
-outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/Picard/results"
+outputDir="${PWD}/results/picard"
 
 cluster="Slurm"
 
 ## Pour mon fichier dans ma liste de fichiers: faire:
-for bamFile in /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/fichiers_test/*.bam ; do
+for bamFile in ${PWD}/results/samtools_sort_tri/*.bam ; do
 	echo "${bamFile}";
 
 
 	if [ "${cluster}" == "Torque" ]
 	then
 		# chemin vers mon script
-		parler_cluster_Torq /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/Picard/picard_conda_marina.qsub \
+		parler_cluster_Torq ${PWD}/scripts/Picard/picard_conda_marina.qsub \
 		"bamFile='${bamFile}',outputDir='${outputDir}'" \ # mes variables
 		"${outputDir}" # mon repertoire de sortie pour la sortie standard et erreur
 
@@ -27,7 +27,7 @@ for bamFile in /Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/fi
 	elif [ "${cluster}" == "Slurm" ]
 	then
 		# chemin vers mon script
-		parler_cluster_Slurm /home/mnocente/Bureau/Projet_ChIP_Marina/scripts/Picard/picard_conda_marina.qsub \
+		parler_cluster_Slurm ${PWD}/scripts/Picard/picard_conda_marina.qsub \
 		"bamFile='${bamFile}',outputDir='${outputDir}'" # mes variables
 
 

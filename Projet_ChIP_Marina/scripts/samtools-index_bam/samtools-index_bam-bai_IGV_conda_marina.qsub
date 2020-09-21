@@ -22,7 +22,7 @@ else [ "${cluster}" != "Torq" ]
 fi
 
 ## Definition du repertoire de sortie pour les resultats:
-outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/samtools-index_bam/results"
+outputDir="${PWD}/results/samtools_index_bam"
 
 ### Affichage de "start samtools" pour verifier que le script se lance bien
 echo "start samtools"

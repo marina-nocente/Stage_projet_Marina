@@ -29,7 +29,7 @@ echo "start bowtie2"
 conda activate bowtie2
 
 ## Definition du repertoire de sortie pour les resultats de bowtie2:
-outputDir="/home/mnocente/Bureau/Projet_ChIP_Marina/scripts/bowtie2/results"
+outputDir="${PWD}/results/bowtie2"
 
 
 ### Utilisation de bowtie2 pour l'alignement:
