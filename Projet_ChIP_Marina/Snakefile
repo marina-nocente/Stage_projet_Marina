@@ -11,8 +11,8 @@ import sys # permet des interactions avec le systeme
 # pour appeler le fichier config
 configfile: "./config.yaml"
 
-print(config["samples"]["Oct4_rep1"]["r1"]) # print le fichier "ChIPseq_Oct4_rep1_1.fastq.gz"
-print(config["samples"].keys()) # affiche les cles du dictionnaire "samples"
+#print(config["samples"]["Oct4_rep1"]["r1"]) # print le fichier "ChIPseq_Oct4_rep1_1.fastq.gz"
+#print(config["samples"].keys()) # affiche les cles du dictionnaire "samples"
 
 
 ## Faire une liste de mes fastq files à partir de ma liste d echantillons
@@ -25,15 +25,15 @@ for ech in list_sample:
     #print(ech)
     for sens in STREAM:
         list_fastq.append("ChIPseq_" + ech + "_" + sens)
-print(list_fastq)
+#print(list_fastq)
 
 ## on peut enchainer le nom des fastq file avec des pipes de la facon suivante :
 fastq_wildcard_constraints = "|".join(list_fastq)
-print(fastq_wildcard_constraints)
+#print(fastq_wildcard_constraints)
 
 
 ## Faire une liste de mes samples files à partir de ma liste d'echantillons
-print("*******************************************")
+#print("*******************************************")
 list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
 
 list_ChIP = []
@@ -41,11 +41,11 @@ list_ChIP = []
 for ech in list_sample:
     #print(ech)
     list_ChIP.append("ChIPseq_" + ech)
-print(list_ChIP)
+#print(list_ChIP)
 
 ## on peut enchainer le nom des samples file avec des pipes de la facon suivante :
 sample_wildcard_constraints = "|".join(list_ChIP)
-print(sample_wildcard_constraints)
+#print(sample_wildcard_constraints)
 
 
 ## On ne fait pas confiance aux ordis! On precise le nom des fichiers
@@ -109,19 +109,20 @@ rule all:
     input:
         expand(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.html"), fastq_wildcard = list_fastq),
         expand(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.zip"), fastq_wildcard = list_fastq),
-#         expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
-#         expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
-#         expand(op.join(config["outputdir"], "fastp", "{sample_wildcard}_1_fastp.fastq.gz"), sample_wildcard=SAMPLE),
-#         expand(op.join(config["outputdir"], "fastp", "{sample_wildcard}_2_fastp.fastq.gz"), sample_wildcard=SAMPLE),
-#         expand(op.join(config["outputdir"], "fastp", "failed_out_{sample_wildcard}.txt"), sample_wildcard=SAMPLE),
-#         expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.json"), sample_wildcard=SAMPLE),
-#         expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.html"), sample_wildcard=SAMPLE)
-#
-#
+
+        expand(op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_1.fastq.gz"), sample_wildcard = list_ChIP),
+        expand(op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_2.fastq.gz"), sample_wildcard = list_ChIP),
+        expand(op.join(config["outputdir"], "fastp", "failed_out_{sample_wildcard}.txt"), sample_wildcard = list_ChIP),
+        expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.json"), sample_wildcard = list_ChIP),
+        expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.html"), sample_wildcard = list_ChIP),
+
+        expand(op.join(config["outputdir"], "bowtie2", "{sample_wildcard}.bam"), sample_wildcard = list_ChIP)
+#       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
+#       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
 
 ##############################################################
 
-#
+
 """
 Cette regle realise l'analyse FastQC de mes fichiers fastq.gz avant trimming
 """
@@ -133,8 +134,6 @@ rule fastqc:
         report(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.zip"), category="FastQC Reports", caption="fastqc.rst")
     message:
         "On controle la qualite avant trimming de {input}"
-    conda:
-        "fastqc.yaml"
     threads:
         config["fastqc"]["threads"]
     log:
@@ -142,9 +141,88 @@ rule fastqc:
     params:
         outdir = op.join(config["outputdir"], "fastQC")
 
-    shell:
-        "fastqc {input.r} --outdir {params.outdir} --threads {threads} &> {log}"
+    wrapper:
+        "0.66.0-241-gab2c8ef4/bio/fastqc" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
 
+
+
+"""
+Cette regle realise le trimming de mes echantillons fastq.gz pour eliminer les adaptateurs avec fastp
+"""
+rule fastp:
+    input:
+        r1 = op.join(config["datadir"], "{sample_wildcard}_1.fastq.gz"),
+        r2 = op.join(config["datadir"], "{sample_wildcard}_2.fastq.gz")
+    output:
+        fastp_r1 = op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_1.fastq.gz"),
+        fastp_r2 = op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_2.fastq.gz"),
+        fastp_filed_out = op.join(config["outputdir"], "fastp", "failed_out_{sample_wildcard}.txt"),
+        fastp_json = report(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.json"), category="Fastp Reports", caption="fastp.rst"),
+        fastp_html = report(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.html"), category="Fastp Reports", caption="fastp.rst")
+    message:
+        "Etape de trimming : on elimine les adaptateurs de {input} et on nettoie avec fastp"
+    threads:
+        config["fastp"]["thread"]
+    log:
+        op.join(config["outputdir"], "fastp", "logs", "{sample_wildcard}.log")
+    params:
+        extra = config["fastp"]["extra"]
+    threads:
+        config["fastp"]["thread"]
+    wrapper:
+        "0.66.0-243-ged9d28af/bio/fastp"
+
+
+
+"""
+Cette regle realise l'indexation du genome de la souris avec bowtie2
+"""
+rule bowtie2_index:
+    input:
+        genome = op.join(config["datadir"], "Genome_souris", "GRCm38.primary_assembly.genome.fa.gz")
+    output:
+        op.join(config["outputdir"], "mouse_index", "bwt2_index/genome.1.bt2")
+    message:
+        "On indexe le genome de {input} avec bowtie2"
+
+    threads:
+        config["bowtie2"]["threads"]
+    log:
+        op.join(config["outputdir"], "bowtie2", "logs", "GRCm38.primary_assembly.genome.log")
+    params:
+        prefix = op.join("mouse_index/mouse_genome_mm10") #genome est mon prefixe
+
+    wrapper:
+        "0.66.0-243-ged9d28af/bio/bowtie2/build" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
+
+
+
+"""
+Cette regle realise le mapping des reads sur le genome de la souris indexe avec bowtie2
+"""
+rule bowtie2_mapping:
+    input:
+        R1= op.join(config["outputdir"],  "fastp", "cleaned_filtered_{sample_wildcard}_1.fastq.gz"),
+        R2= op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_2.fastq.gz")
+
+    output:
+        report(op.join(config["outputdir"], "bowtie2", "{sample_wildcard}.bam"), category="bowtie2 Reports", caption="bowtie2.rst")
+
+    message:
+        "On mappe les reads sur le genome avec bowtie2"
+
+    threads:
+        config["bowtie2"]["threads"]
+
+    log:
+        op.join(config["outputdir"], "bowtie2", "logs", "{sample_wildcard}.log")
+
+    params:
+        index="mouse_index/mouse_genome_mm10", # prefix of reference genome index (built with bowtie2-build)
+        extra="--align-paired-reads"
+
+    wrapper:
+        "0.66.0-243-ged9d28af/bio/bowtie2/align"
 
 # """
 # Cette regle realise l'analyse FastqScreen de mes fichiers fastq.gz avant trimming
@@ -170,37 +248,3 @@ rule fastqc:
 #     shell:
 #         "fastq_screen {input.r} --outdir {params.outdir} --threads {threads} --aligner {params.aligner}  --conf {params.conf} &> {log}"
 #
-#
-#
-# """
-# Cette regle realise le trimming de mes echantillons fastq.gz pour eliminer les adaptateurs
-# """
-# rule fastp:
-#     input:
-#         r1 = op.join(config["datadir"], "{SAMPLE}_1.fastq.gz"),
-#         r2 = op.join(config["datadir"], "{SAMPLE}_2.fastq.gz")
-#     output:
-#         fastp_r1 = op.join(config["outputdir"], "fastp", "cleaned_filtered_{SAMPLE}_1.fastq.gz"),
-#         fastp_r2 = op.join(config["outputdir"], "fastp", "cleaned_filtered_{SAMPLE}_2.fastq.gz"),
-#         fastp_filed_out = op.join(config["outputdir"], "fastp", "failed_out_{SAMPLE}.txt"),
-#         fastp_json = report(op.join(config["outputdir"], "fastp", "fastp_{SAMPLE}.json"), category="Fastp Reports", caption="fastp.rst"),
-#         fastp_html = report(op.join(config["outputdir"], "fastp", "fastp_{SAMPLE}.html"), category="Fastp Reports", caption="fastp.rst")
-#     message:
-#         "Etape de trimming : on elimine les adaptateurs de {input}"
-#     conda:
-#         "fastp.yaml"
-#     threads:
-#         config["fastp"]["thread"]
-#     log:
-#         op.join(config["outputdir"], "fastp", "logs", "fichier_log_{sample}.log")
-#     params:
-#         extra = config["fastp"]["extra"]
-#     shell:
-#         "fastp --in1 {input.r1} --in2 {input.r2} --out1 {output.fastp_r1} --out2 {output.fastp_r2} --failed_out {output.fastp_filed_out} --json {output.fastp_json} --html {output.fastp_html} --thread {threads} {params.extra} &> {log}"
-#
-#
-#
-#
-# """
-# Cette regle realise le mapping de mes echantillons fastq.gz trimmés sur le génome de la souris
-# """

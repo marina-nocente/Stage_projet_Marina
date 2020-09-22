@@ -44,9 +44,14 @@ samples:
 
 fastqc:
     threads: 1 # en pratique ca ne sert a rien de mettre ce parametre car il est deja par defaut.
+
+bowtie2:
+    threads: 8
+
 fastp:
     thread: 8
     extra: "--length_required 25 --detect_adapter_for_pe"
+    
 fastqscreen:
     config: /store/EQUIPES/REMOD/scripts/fastq_screen.conf
     threads: 8
