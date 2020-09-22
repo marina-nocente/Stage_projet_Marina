@@ -1,10 +1,10 @@
-outputdir: ${PWD}/results
+outputdir: results
 references:
     genome: #chemin du genome de ref
     annot: #chemin de l annotation
     index: #chemin du genome de l index
 threads: 8
-datadir: ${PWD}/raw_data
+datadir: raw_data
 samples:
     Oct4_rep1:
         r1: ChIPseq_Oct4_rep1_1.fastq.gz

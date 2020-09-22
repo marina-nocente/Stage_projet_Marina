@@ -1,20 +1,21 @@
-### Snakefile Marina stage IGR septembre 2020 : analyses de ChIP-seq ###
+####### Snakefile Marina stage IGR septembre 2020 : analyses de ChIP-seq #######
+
 """
 Script Python à mettre avant la rule all pour interpréter les samples dans le fichier de config
 et lister les echantillons.
 """
 
 import os.path as op # permet de faciliter l acces aux chemins de fichier etc
-import sys
+import sys # permet des interactions avec le systeme
 
 # pour appeler le fichier config
 configfile: "./config.yaml"
 
-print(config["samples"]["Oct4_rep1"]["r1"])
-print(config["samples"].keys())
+print(config["samples"]["Oct4_rep1"]["r1"]) # print le fichier "ChIPseq_Oct4_rep1_1.fastq.gz"
+print(config["samples"].keys()) # affiche les cles du dictionnaire "samples"
 
 
-# Faire une liste de mes fastq files à partir de ma liste d echantillons
+## Faire une liste de mes fastq files à partir de ma liste d echantillons
 list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
 STREAM = ["1", "2"]
 
@@ -25,20 +26,36 @@ for ech in list_sample:
     for sens in STREAM:
         list_fastq.append("ChIPseq_" + ech + "_" + sens)
 print(list_fastq)
-sample_wildcard_test = "|".join(list_fastq)
 
-print(sample_wildcard_test)
+## on peut enchainer le nom des fastq file avec des pipes de la facon suivante :
+fastq_wildcard_constraints = "|".join(list_fastq)
+print(fastq_wildcard_constraints)
+
+
+## Faire une liste de mes samples files à partir de ma liste d'echantillons
+print("*******************************************")
+list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
+
+list_ChIP = []
+
+for ech in list_sample:
+    #print(ech)
+    list_ChIP.append("ChIPseq_" + ech)
+print(list_ChIP)
+
+## on peut enchainer le nom des samples file avec des pipes de la facon suivante :
+sample_wildcard_constraints = "|".join(list_ChIP)
+print(sample_wildcard_constraints)
+
 
 ## On ne fait pas confiance aux ordis! On precise le nom des fichiers
-
-
 wildcard_constraints:
-    sample_wildcard = "ChIPseq_Oct4_rep1_1|ChIPseq_Oct4_rep1_2|ChIPseq_Oct4_rep2_1|ChIPseq_Oct4_rep2_2|ChIPseq_TBP_rep1_1|ChIPseq_TBP_rep1_2|ChIPseq_TBP_rep2_1|ChIPseq_TBP_rep2_2|ChIPseq_Pol2_rep1_1|ChIPseq_Pol2_rep1_2|ChIPseq_Pol2_rep2_1|ChIPseq_Pol2_rep2_2|ChIPseq_CTCF_1|ChIPseq_CTCF_2|ChIPtandem_Chd8_rep1_1|ChIPtandem_Chd8_rep1_2|ChIPtandem_Chd8_rep2_1|ChIPtandem_Chd8_rep2_2",
-    sample = "ChIPseq_Oct4_rep1|ChIPseq_Oct4_rep2|ChIPseq_TBP_rep1|ChIPseq_TBP_rep2|ChIPseq_Pol2_rep1|ChIPseq_Pol2_rep2|ChIPseq_CTCF|ChIPtandem_Chd8_rep1|ChIPtandem_Chd8_rep2"
+    fastq_wildcard = fastq_wildcard_constraints,
+    sample_wildcard = sample_wildcard_constraints
 
 
 # il faut faire des noms de fichiers uniformes, c est plus facile
-# pour liste les echantillons, on commence par des guillemets doucles, puis on ecrit les echantillons separes par des pipes mais SANS espace.
+# pour liste les echantillons, on commence par des guillemets doubles, puis on ecrit les echantillons separes par des pipes mais SANS espace.
 
 
 ## On peut faire un raport final:
@@ -85,24 +102,13 @@ report: "report_analyse_ChIP-seq_Marina.rst"
 # La toute premiere regle, c'est ce que je veux a la fin (comme en cuisine: mon gateau!):
 # """
 # shell.prefix("set -ieuop pipefail; ")
-#
-# #SAMPLE_ID = ["ChIPseq_Oct4_rep1_1", "ChIPseq_Oct4_rep1_2", "ChIPseq_Oct4_rep2_1", "ChIPseq_Oct4_rep2_2", "ChIPseq_TBP_rep1_1", "ChIPseq_TBP_rep1_2", "ChIPseq_TBP_rep2_1", "ChIPseq_TBP_rep2_2", "ChIPseq_Pol2_rep1_1", "ChIPseq_Pol2_rep1_2", "ChIPseq_Pol2_rep2_1", "ChIPseq_Pol2_rep2_2", "ChIPseq_CTCF_1", "ChIPseq_CTCF_2", "ChIPtandem_Chd8_rep1_1", "ChIPtandem_Chd8_rep1_2", "ChIPtandem_Chd8_rep2_1", "ChIPtandem_Chd8_rep2_2"]
-#
-# SAMPLE = ["ChIPseq_Oct4_rep1", "ChIPseq_Oct4_rep2", "ChIPseq_TBP_rep1", "ChIPseq_TBP_rep2", "ChIPseq_Pol2_rep1", "ChIPseq_Pol2_rep2", "ChIPseq_CTCF", "ChIPtandem_Chd8_rep1", "ChIPtandem_Chd8_rep2"]
-# STREAM = ["1", "2"]
-#
-# for ech in SAMPLE:
-#     #print(ech)
-#     for sens in STREAM:
-#         #print(sens)
-#         Fastq_name_liste.append(ech + "_" + sens)
-# print(Fastq_name_liste)
+
 #
 #
-# rule all:
-#     input:
-#         expand(op.join(config["outputdir"], "QC", "fastqc", "{sample_wildcard}_fastqc.html"), sample_wildcard=Fastq_name_liste),
-#         expand(op.join(config["outputdir"], "QC", "fastqc", "{sample_wildcard}_fastqc.zip"), sample_wildcard=Fastq_name_liste),
+rule all:
+    input:
+        expand(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.html"), fastq_wildcard = list_fastq),
+        expand(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.zip"), fastq_wildcard = list_fastq),
 #         expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
 #         expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
 #         expand(op.join(config["outputdir"], "fastp", "{sample_wildcard}_1_fastp.fastq.gz"), sample_wildcard=SAMPLE),
@@ -116,30 +122,30 @@ report: "report_analyse_ChIP-seq_Marina.rst"
 ##############################################################
 
 #
-# """
-# Cette regle realise l'analyse FastQC de mes fichiers fastq.gz avant trimming
-# """
-# rule fastqc:
-#     input:
-#         r = op.join(config["datadir"], "{sample_wildcard}.fastq.gz")
-#     output:
-#         report(op.join(config["outputdir"], "fastqc", "{sample_wildcard}_fastqc.html"), category="FastQC Reports", caption="fastqc.rst"),
-#         report(op.join(config["outputdir"], "fastqc", "{sample_wildcard}_fastqc.zip"), category="FastQC Reports", caption="fastqc.rst")
-#     message:
-#         "On controle la qualite avant trimming de {input}"
-#     conda:
-#         "fastqc.yaml"
-#     threads:
-#         config["fastqc"]["threads"]
-#     log:
-#         op.join(config["outputdir"], "fastqc", "logs", "{sample_wildcard}.log")
-#     params:
-#         outdir = op.join(config["outputdir"], "fastqc")
-#
-#     shell:
-#         "fastqc {input.r} --outdir {params.outdir} --threads {threads} &> {log}"
+"""
+Cette regle realise l'analyse FastQC de mes fichiers fastq.gz avant trimming
+"""
+rule fastqc:
+    input:
+        r = op.join(config["datadir"], "{fastq_wildcard}.fastq.gz")
+    output:
+        report(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.html"), category="FastQC Reports", caption="fastqc.rst"),
+        report(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.zip"), category="FastQC Reports", caption="fastqc.rst")
+    message:
+        "On controle la qualite avant trimming de {input}"
+    conda:
+        "fastqc.yaml"
+    threads:
+        config["fastqc"]["threads"]
+    log:
+        op.join(config["outputdir"], "fastQC", "logs", "{fastq_wildcard}.log")
+    params:
+        outdir = op.join(config["outputdir"], "fastQC")
 
-#
+    shell:
+        "fastqc {input.r} --outdir {params.outdir} --threads {threads} &> {log}"
+
+
 # """
 # Cette regle realise l'analyse FastqScreen de mes fichiers fastq.gz avant trimming
 # """

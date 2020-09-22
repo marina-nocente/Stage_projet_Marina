@@ -1,0 +1,9 @@
+---
+  name: fastqc_environment
+
+  channels:
+    - bioconda
+    - conda-forge
+
+  dependencies:
+    - bioconda:fastqc=0.11.9
