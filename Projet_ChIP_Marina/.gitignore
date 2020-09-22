@@ -1,2 +1,6 @@
 # on veut masquer le repertoire "raw_data".
 raw_data
+
+results
+
+.snakemake

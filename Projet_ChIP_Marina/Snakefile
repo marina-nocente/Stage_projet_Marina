@@ -107,19 +107,19 @@ report: "report_analyse_ChIP-seq_Marina.rst"
 #
 rule all:
     input:
-        expand(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.html"), fastq_wildcard = list_fastq),
-        expand(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.zip"), fastq_wildcard = list_fastq),
-
-        expand(op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_1.fastq.gz"), sample_wildcard = list_ChIP),
-        expand(op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_2.fastq.gz"), sample_wildcard = list_ChIP),
-        expand(op.join(config["outputdir"], "fastp", "failed_out_{sample_wildcard}.txt"), sample_wildcard = list_ChIP),
-        expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.json"), sample_wildcard = list_ChIP),
-        expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.html"), sample_wildcard = list_ChIP),
-
+#        expand(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.html"), fastq_wildcard = list_fastq),
+#        expand(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.zip"), fastq_wildcard = list_fastq),
+#        expand(op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_1.fastq.gz"), sample_wildcard = list_ChIP),
+#        expand(op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_2.fastq.gz"), sample_wildcard = list_ChIP),
+#        expand(op.join(config["outputdir"], "fastp", "failed_out_{sample_wildcard}.txt"), sample_wildcard = list_ChIP),
+#        expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.json"), sample_wildcard = list_ChIP),
+#        expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.html"), sample_wildcard = list_ChIP),
+        op.join(config["outputdir"], "multiQC", "multiqc.html"),
         expand(op.join(config["outputdir"], "bowtie2", "{sample_wildcard}.bam"), sample_wildcard = list_ChIP)
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
 
+#        expand(op.join(config["outputdir"], "samtools_flagstat", "{sample_wildcard}.bam.flagstat"), sample_wildcard = list_ChIP)
 ##############################################################
 
 
@@ -142,7 +142,7 @@ rule fastqc:
         outdir = op.join(config["outputdir"], "fastQC")
 
     wrapper:
-        "0.66.0-241-gab2c8ef4/bio/fastqc" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
+        "Unofficial/bio/fastqc" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
 
 
 
@@ -170,7 +170,7 @@ rule fastp:
     threads:
         config["fastp"]["thread"]
     wrapper:
-        "0.66.0-243-ged9d28af/bio/fastp"
+        "Unofficial/bio/fastp"
 
 
 
@@ -193,7 +193,7 @@ rule bowtie2_index:
         prefix = op.join("mouse_index/mouse_genome_mm10") #genome est mon prefixe
 
     wrapper:
-        "0.66.0-243-ged9d28af/bio/bowtie2/build" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
+        "Unofficial/bio/bowtie2/build" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
 
 
 
@@ -222,7 +222,45 @@ rule bowtie2_mapping:
         extra="--align-paired-reads"
 
     wrapper:
-        "0.66.0-243-ged9d28af/bio/bowtie2/align"
+        "Unofficial/bio/bowtie2/align"
+
+
+
+
+"""
+Cette regle permet d'obtenir des statistiques sur le mapping des reads avec samtools_flagstat
+"""
+
+
+rule samtools_flagstat:
+    input:
+        op.join(config["outputdir"],  "bowtie2", "{sample_wildcard}.bam")
+    output:
+        report(op.join(config["outputdir"], "samtools_flagstat", "{sample_wildcard}.bam.flagstat"), category="samtools_flagstat Reports", caption="samtools_flagstat.rst")
+    wrapper:
+        "Unofficial/bio/samtools/flagstat"
+
+
+
+"""
+Cette regle permet de "resumer" les resultats de fastp grace a multiQC
+"""
+rule multiQC:
+    input:
+        expand("results/fastp/cleaned_filtered_ChIPseq_{list_fastq}.fastq.gz", list_fastq=["Oct4_rep1_1", "Oct4_rep1_2", "Oct4_rep2_1", "Oct4_rep2_1","TBP_rep1_1", "TBP_rep1_2", "TBP_rep2_1", "TBP_rep2_2", "Pol2_rep1_1", "Pol2_rep1_2","Pol2_rep2_1", "Pol2_rep2_2", "CTCF_1", "CTCF_2", "Chd8_rep1_1", "Chd8_rep1_2", "Chd8_rep2_1", "Chd8_rep2_2"]),
+        expand("results/fastQC/ChIPseq_{list_fastq}_fastqc.zip", list_fastq=["Oct4_rep1_1", "Oct4_rep1_2", "Oct4_rep2_1", "Oct4_rep2_1","TBP_rep1_1", "TBP_rep1_2", "TBP_rep2_1", "TBP_rep2_2", "Pol2_rep1_1", "Pol2_rep1_2","Pol2_rep2_1", "Pol2_rep2_2", "CTCF_1", "CTCF_2", "Chd8_rep1_1", "Chd8_rep1_2", "Chd8_rep2_1", "Chd8_rep2_2"]),
+        expand("results/samtools_flagstat/ChIPseq_{list_sample}.bam.flagstat", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2'])
+    output:
+        report(op.join(config["outputdir"], "multiQC", "multiqc.html"), category="multiQC Reports", caption="multiqc.rst")
+    message:
+        "MulitQC permet de présenter un resume des resultats de fastp sur {input}"
+    log:
+        op.join(config["outputdir"], "multiQC", "logs", "multiqc.log")
+    wrapper:
+        "Unofficial/bio/multiqc"
+
+
+
 
 # """
 # Cette regle realise l'analyse FastqScreen de mes fichiers fastq.gz avant trimming

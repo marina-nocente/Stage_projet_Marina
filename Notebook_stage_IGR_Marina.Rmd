@@ -1,0 +1,330 @@
+---
+title: "Notebook_stage_IGR_Marina"
+output:
+  html_document:
+    fig_caption: yes
+    highlight: zenburn
+    number_sections: no
+    self_contained: yes
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Contexte biologique du projet :
+
+Le projet de ce stage s'intégère dans un projet plus global qui vise à étudier le rôle des remodeleurs de la chromatine dans la régulation de la fonction des éléments régulateurs du génome mammifère en relation avec les autres acteurs de la transcription.
+
+En effet, on souhaite tester à grande échelle comment les pertes de fonction des remodeleurs (BRG1, EP400, CHD4, CHD1 et CHD8) perturbent la liaison des facteurs de transcription (TFs) et de la polymérase 2  (Pol 2) sur chaque type d’élément régulateur par BarChIP-seq (comparaison qualitatives et quantitatives de multiples expériences de ChIP-seq (différentes chromatines barcodées et mélangées dans un même tube pour l’IP)).
+
+La première étape était de faire des expériences de ChIP-seq pour vérifier l’efficacité des anticorps et faire une 1ère étude de la localisation des facteurs (en présence des remodeleurs). 
+
+
+# Données et questions biologiques posées pour le stage :
+
+Je dispose donc d'une série de ChiP-seq (sans input) fait par moi-même et d'un duplicat de ChIP-seq tandem : 
+
+- 2 ChIP-seq anti-TBP ab51841 (un sur cellules 46C-pLinker réalisé en février 2018 et séquencé au CNRGH en septembre 2018 et un ur cellules E14 réalisé en décembre 2019 et séquencé au CNRGH en février 2020.),
+
+- 2 ChIP-seq anti-Pol2 sc-55492 (un sur cellules 46C-pLinker réalisé en février 2018 et séquencé au CNRGH en septembre 2018 et un sur cellules E14 réalisé en décembre 2019 et séquencé au CNRGH en février 2020.),
+
+- 2 ChIP-seq anti-Oct4 sc-8628 (sur cellules 46C-pLinker réalisés en avril 2017 et séquencés à Gif-sur-Yvette en avril 2017),
+
+- 1 ChIP-seq anti-CTCF #07-729 (sur cellules 46C-pLinker réalisé en février 2018 et séquencé au CNRGH en septembre 2018),
+
+- 2 ChIP-seq tandem anti-HA (H3663) + anti-Flag (F1804) ciblant Chd8 (sur cellules 46C-pLinker réalisés en décembre 2011 et en novembre 2012 et séquencés au CNRGH en aout 2018.),
+
+
+**Mes questions biologiques pour mon stage sont :**
+- Quels sont les profils de liaison au génome des facteurs Pol2, TBP, CTCF, Oct4 et Chd8 ? 
+
+- Quelle est la signification biologique de la répartition de ces facteurs sur le génome ? Quelles sont leurs cibles préférentielles (promoteurs, enhancers, sites CTCF) ? 
+
+
+# 1. Semaine 1 du stage :
+
+## Discussion avec Thibaut:
+
+![Pipeline pour mes analyse partie 1](/Users/mn242062/Desktop/Pipeline_stage_marina_partie1.png)
+
+
+![Pipeline pour mes analyse partie 2](/Users/mn242062/Desktop/Pipeline_stage_marina_partie2.png)
+
+
+![Pipeline pour mes analyse partie 3](/Users/mn242062/Desktop/Pipeline_stage_marina_partie3.png)
+
+
+Pour l'intégration des données, on va devoir comparer nos listes d'enhancer, promoteurs, sites CTCF par rapport à tous les enhancer, promoteurs, sites CTCF.
+--> Consulter des bases de données pour trouver des listes qui contiennent tout les enhancer, promoteurs, sites CTCF...
+
+
+**Consignes de Thibault pour l'organisation du projet:**
+
+On va faire un script par outil et un script qui permet de définir les paramètres et de lancer le bon script d'outils.
+
+Dans un tableau Excel, avec en ligne les échantillons et en colonnes mes étapes/informations, on écrira au fur et à mesure l'avancement du projet.
+
+Ecrire un Rmd avec EVAL=FALSE pour garder une trace de ce qui est important, des lignes de commande que je lance *etc*...
+
+Mettre mes scripts et mon tableau d'avancement sur GitHub (attention c'est public).
+
+
+## Ecriture des scripts:
+
+J'ai écrit 3 types de script:
+
+- un script "fonction_parler_cluster" contenant la fonction parler_cluster_Torq et fonction parler_cluster_Slurm qui permet d'appeler un script avec des variables et des paramètres sur un cluster Slurm ou Torque.
+
+- des scripts pour utiliser un outil. Par exemple : fastQC, fastqScreen, fastp...
+
+- des scripts pour lancer le script de l'outil qui m'interesse tout en définissant des variables et des paramètres pour le cluster utilisé.
+
+Par exemple, pour tester le script "script_lancement_fastQC_marina_fonction" qui va lancer le script "fastQC_conda_marina", dans le bon répertoire, je lance la commande :
+
+```{bash, eval=FALSE}
+bash script_lancement_fastQC_marina_fonction
+
+```
+
+Pour créer des fichiers test vides en attendant la création de mon compte sur le cluster de l'IGR et tester mes scripts, j'ai utiliser la commande "touch".
+
+```{bash, eval=FALSE}
+touch 1.fastq.gz
+touch 2.fastq.gz
+```
+
+Tout mes scripts on été testés de cette facon et cela semble fonctionner.
+
+## Bases de données sur lesquelles on peut récupérer des fasta et des gff:
+
+Annotation pour la souris :
+
+- ENSEMBL : fait par l'EBI, ils ont plein d'organismes, de bed, de peaks...
+
+_ MGI : dédié à la souris (un peu difficile de trouver, il faut beaucoup fouiller)
+
+- GENCODE : humain et souris.
+
+J'avais pris le fichier fasta pour l'alignement sur GENCODE.
+**Attention**: pour fastqScreen, tous les génomes doivent venir de la même base de données.
+
+J'ai pris le FASTA sur GENCODE: "contenu Genome sequence, primary assembly (GRCm38) mm10, region PRI. Nucleotide sequence of the GRCm38 primary genome assemby (chromosomes and scaffolds (suffisant pour ce que l'on veut nous, pas besoin du reste)). The sequence region names are in the same as in the GTF/GFF file".
+
+```{bash, eval=FALSE}
+grep "chr" annotation.fna.gz
+```
+
+J'ai bien mes 19 chromosomes + X + Y + M (mitochondrie).
+
+
+## Quelques remarques sur le code :
+
+- Pour simplifier : cpu = thread
+
+- "back-slash \" : permet d'échapper un symbole, un retour à la ligne etc... Il faut le mettre juste avant ce que l'on veut échapper.
+
+- Avec de simple guillemets : pas d'interprétation des variables.
+_ Avec des doubles guillemets : interprétation des variables.
+
+- Penser à écrire sur du papier quand on est bloquer pour écrire.
+
+
+## Déposer son travail sur GitHub :
+
+Aller sur le site internet de GitHub et se connecter.
+Créer un nouveau "repository" avec un fichier Readme (fichier dans lequel le projet est décrit). Attention mettre en public.
+
+Dans mon terminal, dans le bon dossier :
+```{bash, eval=FALSE}
+git status # on voit où on en est
+git add $ # ajouter les modifications (* = toutes)
+git commit -m "description de ce que l'on a fait" # pour versionner la modification
+git push # il demande le login et mdp
+
+```
+
+
+
+## Etat d'avancement du travail:
+
+Le répertoire "script" contient le script "fonction_parler_cluster" qui permet d'appeler un script avec des variables et des paramètres sur un cluster Slurm ou Torque. 
+
+Le répertoire "script" contient également lui-même 11 répertoires (un pour chaque outil et étape): 
+
+- "fastQC" (observation ds qualité des reads)
+
+- "fastqScreen" (observation d'éventuelles contaminations)
+
+- "fastp" (trimming des reads)
+
+- "bowtie2" (alignement des reads sur le génome de la souris mm10)
+
+- "samtools_flagstat" (statistiques sur la qualité de l'alignement)
+
+- "samtools_sort" (les reads sont triés par coordonnées de chromosome)
+
+- "Picard" (marquages des reads dupliqués)
+
+- "samtools_view_sort_fichiers_nettoyes" (élimination ds reads dupliqués)
+
+- "samtools_index_bam" (indexation des bam pour la visualisation dans IGV)
+
+
+## Quelques recherches sur les outils :
+
+### Fastp : tout en un et ultra-rapide
+
+Un outil (développé en C++ avec multithreading pour offrir des performances élevées) conçu pour fournir un prétraitement rapide tout-en-un pour les fichiers FastQ.
+
+Caractéristiques :
+-	profilage de qualité complet pour les données de filtrage avant et après (courbes de qualité, contenu de base, KMER, Q20 / Q30, rapport GC, duplication, contenu de l'adaptateur ...)
+-	filtrer les mauvaises reads (qualité trop faible, trop courte ou trop de N ...)
+-	couper des bases de faible qualité par read en 5 'et 3' en évaluant la qualité moyenne d'une fenêtre coulissante (comme Trimmomatic mais plus rapide).
+-	couper toutes les reads en début et fin
+-	couper les adaptateurs. Les séquences d'adaptateurs peuvent être détectées automatiquement, ce qui signifie que vous n'avez pas à saisir les séquences d'adaptateurs pour les découper.
+-	corriger les mismatches dans les régions overlappées des paires de reads (si une base est de haute qualité tandis que l'autre est de très faible qualité)
+-	couper le polyG aux extrémités 3 ', ce qui est courant dans les données NovaSeq / NextSeq. Couper le polyX aux extrémités de 3 'pour éliminer les résidus polyX indésirables (c'est-à-dire les résidus polyA pour les données RNAm-Seq)
+-	processus unique d’identifiant moléculaire (UMI), déplacer l'UMI vers le nom de la séquence.
+-	rapporter le résultat au format JSON pour une interprétation ultérieure.
+-	visualiser les résultats du contrôle qualité et du filtrage sur une seule page HTML (comme FASTQC mais plus rapide et plus informatif).
+-	divisez la sortie en plusieurs fichiers (0001.R1.gz, 0002.R1.gz ...) pour prendre en charge le traitement parallèle. Deux modes peuvent être utilisés : limitant le nombre total de fichiers fractionnés ou limitant les lignes de chaque fichier divisé.
+-	prend en charge les lectures longues (données des appareils PacBio / Nanopore).
+-	supporte la lecture depuis STDIN et l'écriture vers STDOUT
+
+https://github.com/OpenGene/fastp#features
+
+
+### Bowtie2 (mapper classique):
+
+Bowtie 2 est un outil ultrarapide et efficace en mémoire pour aligner les reads de séquençage sur de longues séquences de référence. Il est particulièrement efficace pour aligner des reads d'environ 50 à 100 pb sur des génomes relativement longs (par ex : mammifères). Bowtie 2 indexe le génome avec un index FM (basé sur la transformation Burrows-Wheeler ou BWT) pour garder son empreinte mémoire petite: pour le génome humain, son empreinte mémoire est généralement d'environ 3,2 Go de RAM. Bowtie 2 peut faire des alignements avec des gaps, des alignements locaux et paired-end. Plusieurs processeurs peuvent être utilisés simultanément pour aumenter la vitesse de l’alignement.
+Bowtie 2 génère des alignements au format SAM, permettant l'interopérabilité avec un grand nombre d'autres outils (par exemple SAMtools). Bowtie 2 est souvent la première étape des pipelines pour la génomique comparative, y compris pour la recherche de variants, le ChIP-seq, RNA-seq.
+
+
+*End-to-end versus local alignment :*
+Par défaut, Bowtie 2 effectue un alignement de read de bout en bout (= end-to-end). C'est-à-dire qu'il recherche les alignements impliquant toutes les bases du read.
+Lorsque l'option –local est spécifiée, Bowtie 2 effectue un alignement local du read. Dans ce mode, Bowtie 2 peut «découper» ou «couper» certaines bases du read à l'une ou aux deux extrémités de l'alignement si cela maximise le score d'alignement.
+
+
+*Les scores : fort = plus similaire*
+
+Un score d'alignement quantifie la similitude de la séquence du read aligné avec la séquence de référence. Plus le score est élevé, plus ils sont similaires. Un score est calculé en soustrayant les pénalités pour chaque différence (mismatchs, gaps, etc.) et, en mode d'alignement local, en ajoutant des bonus pour chaque match.
+Les scores peuvent être configurés avec les options :
+--ma (match bonus), --mp (mismatch penalty), --np (penalty for having an N in either the read or the reference), --rdg(affine read gap penalty) and --rfg (affine reference gap penalty).
+
+_Ex de score pour un alignement « end-to-end » :_
+Une base mismatch à une position de haute qualité dans le read reçoit une pénalité de -6 par défaut. Une longueur de gap de 2 dans le read reçoit une pénalité de -11 par défaut (-5 pour l'ouverture du gap, -3 pour la première extension, -3 pour la deuxième extension). Ainsi, en mode d'alignement de bout en bout, si le read a une longueur de 50 pb et matche exactement à la référence, à l'exception d'un mismatch à une position de haute qualité et d’un gap de longueur 2, alors le score global est de - (6 + 11) = -17.
+Le meilleur score d'alignement possible en mode end-to-end est 0, ce qui se produit lorsqu'il n'y a aucune différence entre le read et la référence.
+
+_Ex de score pour un alignement local :_
+Une base mismatch à une position de haute qualité dans le read reçoit une pénalité de -6 par défaut. Une longueur de gap de 2 dans le read reçoit une pénalité de -11 par défaut (-5 pour l'ouverture du gap, -3 pour la première extension, -3 pour la deuxième extension). Une base qui matche reçoit un bonus de +2 par défaut. Ainsi, en mode d'alignement local, si le read a une longueur de 50 pb et correspond exactement à la référence, sauf pour un mismatch à une position de haute qualité et un gap de longueur 2, le score global est égal au bonus total, 2 x 49, moins la pénalité totale, 6 + 11, = 81.
+Le meilleur score possible en mode local est égal au bonus de match multiplié par la longueur du read. Cela se produit lorsqu'il n'y a aucune différence entre le read et la référence. 
+
+
+Les alignements valides atteignent ou dépassent le seuil de score minimum :
+Pour qu'un alignement soit considéré comme «valide» (c'est-à-dire «assez bon») par Bowtie 2, il doit avoir un score d'alignement supérieur ou égal au seuil de score minimum. Le seuil est configurable et s'exprime en fonction de la longueur du read. En mode d'alignement de bout en bout, le seuil de score minimum par défaut est -0,6 + -0,6 x L, où L est la longueur du read. En mode d'alignement local, le seuil de score minimum par défaut est 20 + 8,0 x ln (L). Cela peut être configuré avec l'option --score-min. 
+
+
+*La qualité du mapping : fort = plus unique*
+
+L'aligneur ne peut pas toujours assigner un read à son point d'origine avec un niveau de confiance élevé. Par ex, un read qui est à l'intérieur d'un élément répété peut s'aligner tout aussi bien sur de nombreuses occurrences de l'élément dans le génome, ne laissant à l'aligneur aucune base pour préférer l'un aux autres.
+
+Les aligneurs caractérisent leur degré de confiance dans le point d'origine en rapportant une qualité de mapping : un entier non négatif Q = -10 log10 p, où p est une estimation de la probabilité que l'alignement ne corresponde pas au vrai point d'origine du read . La qualité de la cartographie est parfois abrégée MAPQ et est enregistrée dans le champ SAM MAPQ.
+La qualité du mapping est liée à «l’uniqueness». On dit qu'un alignement est unique s'il a un score d'alignement beaucoup plus élevé que tous les autres alignements possibles. Plus l’écart entre le meilleur score d’alignement et le deuxième meilleur score d’alignement est grand, plus le meilleur alignement est unique et plus sa qualité de mapping doit être élevée.
+
+Des qualités de mappage précises sont utiles pour les outils en aval comme recherche de variants. Par ex, un « chercheur » de variant peut choisir d'ignorer les preuves d'alignements avec une qualité de mappage inférieure à, disons, 10. Une qualité de mapping de 10 ou moins indique qu'il y a au moins 1 chance sur 10 que le read soit réellement originaire ailleurs.
+
+Alignement des paires :
+Un read paired-end ou mate-pair consiste en une paire de ‘partenaires’, appelés mate 1 et mate 2. Les paires viennent avec une attente préalable concernant (a) l'orientation relative des mates, et (b) la distance séparant les mates sur la molécule d'ADN d'origine. 
+Les attentes exactes pour un ensemble de données dépendent des procédures de laboratoire utilisées pour générer les données. Par exemple, une procédure de laboratoire courante pour produire des mates est ‘Illumina’s Paired-end Sequencing Assay’, qui donne des mates avec une orientation relative de FR («avant, arrière»), ce qui signifie que si le mate 1 venait du brin Watson, le mate 2 est très probablement venu du brin Crick et vice versa. En outre, ce protocole donne des mates où la distance génomique attendue de bout en bout est d'environ 200 à 500 pb.
+
+http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml
+
+ATTENTION : bowtie2 ne permet pas de mapper sur les jonctions d’épissage, donc il n’est pas recommandé pour le RNA-seq. Cependant, on peut quand-même utiliser Bowtie2 pour les RNA-seq si on incorpore les transcrits connus au génome de référence de sorte qu'un read puisse être alignée sur toute sa longueur. Pour des reads d’une longueur de 100 pb, on peut les diviser en segments 35 + 30 + 35 et aligner les deux segments 35bp pour tester s'il y a une jonction d'épissure au milieu des 30bp. Avec bowtie2, on peut utiliser --local et -k pour obtenir plusieurs hits locaux causés par l'épissage. Ces approches sont assez grossières.
+
+
+## Prévision de la semaine prochaine :
+
+- Faire tourner mes scripts sur mes données sur le cluster et ajuster les paramètres (notamment pour le mapping).
+
+_ Continuer le pipeline des analyses
+
+_ Visualiser les bam.bi sous IGV.
+
+
+# Semaine 2 du stage :
+
+## Changement des  chemins absolus par des chemins relatifs dans mes codes (plus pratique)
+
+J'utilise la variable ${PWD} qui permet de donner le chemin de la racine jusqu'au dossier où je suis. On peut ensuite rajouter un chemin relatif.
+
+
+## Téléchargement de mes fichiers fastq.gz et dépôt sur l'IFB.
+
+A cause des soucis du cluster de l'I2BC (problème de refroidissement) et de la trop courte durée de mon stage à l'IGR (impossible de me créer un compte distant pour une si courte durée), je dois travailler sur le cluster de l'IFB.
+
+Je télécharge mes données depuis Nextcloud IGR sur mon ordinateur, puis je les dépose dans mon espace sur le cluster de l'IFB.
+J'ordonne mes données et je les renomme en gardant le nom initial dans mon fichier "feuille_route".
+
+**Mise à jour du 22/09/20** : je ne vais pas travailler sur le cluster de l'IFB car trop peu d'espace de stockage et on ne peut pas y installer conda. Je vais donc travailler sur ma machine.
+
+Pour gérer les mots de passe, on peut utiliser le loogiciel "KeePass".
+
+J'ai 9 échantillons au total (18 fichiers avec le R1 et le R2).
+
+
+## Création d'un pipeline Snakemake pour mes analyses.
+
+A partir de mes codes écrits pour les différents outils, je créé un pipeline Snakemake afin d'automatiser les analyses.
+On va utiliser Snakemake avec des wrappers car cela permet de gérer seul conda, les échantillons, les variables etc...
+
+Quand un wrapper n'existe pas, il faut le faire soit même (installer avec conda *etc...*).
+Pour l'instant, il existe des wrappers pour FastQC, fastq_screen, fastp, Bowtie2, samtools_flagstat, samtools_sort, samtools_view, samtools_index, Picard Marked_duplicates.
+Il n'existe pas de wrappers pour Bowtie2_index.
+
+```{bash, eval=FALSE}
+snakemake --configfile config.yaml --snakefile Snakefile -j1 --printshellcmd --use-conda --dryrun
+```
+
+--dryrun : empeche l'exécution de la commande. Pratique pour vérifier si le script fonctionne avant de l'exécuter.
+
+### fastQC et multiQC :
+
+J'ai fait tourner fastQC en local sur ma machine et j'utilise multiQC pour voir tous les résultats en même temps.
+Il faut que j'installe multiQC en local avec conda.
+
+```{bash, eval=FALSE}
+conda create -n  multiqc -c bioconda -c conda-forge multiqc=1.8
+
+conda activate multiqc
+cd results/fastQC/
+multiqc .
+
+```
+
+
+### Installation de Snakemake via le fichier yaml de Thibault (bonnes versions, outils etc...)
+
+```{bash, eval=FALSE}
+conda env create -f ./snakemake_env.yaml
+```
+
+
+### Permet d'afficher une image du pipeline
+```{bash, eval=FALSE}
+snakemake --configfile config.yaml --snakefile Snakefile -j1 --printshellcmd --use-conda --dryrun --reason --rulegraph | dot -T png > test.png
+
+eog test.png
+
+snakemake --configfile config.yaml --snakefile Snakefile -j5 --printshellcmd --use-conda --reason --wrapper-prefix https://raw.githubusercontent.com/tdayris/snakemake-wrappers/
+
+```
+
+#doc des wrappers
+file:///home/mnocente/snakemake-wrappers/docs/_build/html/wrappers/picard/markduplicates.html
