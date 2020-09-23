@@ -128,7 +128,7 @@ Cette regle realise l'analyse FastQC de mes fichiers fastq.gz avant trimming
 """
 rule fastqc:
     input:
-        r = op.join(config["datadir"], "{fastq_wildcard}.fastq.gz")
+        op.join(config["datadir"], "{fastq_wildcard}.fastq.gz")
     output:
         report(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.html"), category="FastQC Reports", caption="fastqc.rst"),
         report(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.zip"), category="FastQC Reports", caption="fastqc.rst")
@@ -151,24 +151,18 @@ Cette regle realise le trimming de mes echantillons fastq.gz pour eliminer les a
 """
 rule fastp:
     input:
-        r1 = op.join(config["datadir"], "{sample_wildcard}_1.fastq.gz"),
-        r2 = op.join(config["datadir"], "{sample_wildcard}_2.fastq.gz")
+        sample=["raw_data/{sample_wildcard}_1.fastq.gz", "raw_data/{sample_wildcard}_2.fastq.gz"]
     output:
-        fastp_r1 = op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_1.fastq.gz"),
-        fastp_r2 = op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_2.fastq.gz"),
-        fastp_filed_out = op.join(config["outputdir"], "fastp", "failed_out_{sample_wildcard}.txt"),
-        fastp_json = report(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.json"), category="Fastp Reports", caption="fastp.rst"),
-        fastp_html = report(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.html"), category="Fastp Reports", caption="fastp.rst")
+        trimmed=["results/fastp/cleaned_filtered_{sample_wildcard}_1.fastq.gz", "results/fastp/cleaned_filtered_{sample_wildcard}_2.fastq.gz"],
+        html=report("results/fastp/{sample_wildcard}.html"), category="Fastp Reports", caption="fastp.rst"),
+        json=report("results/fastp/{sample_wildcard}.json"), category="Fastp Reports", caption="fastp.rst")
     message:
         "Etape de trimming : on elimine les adaptateurs de {input} et on nettoie avec fastp"
-    threads:
-        config["fastp"]["thread"]
+    threads: 2
     log:
         op.join(config["outputdir"], "fastp", "logs", "{sample_wildcard}.log")
     params:
-        extra = config["fastp"]["extra"]
-    threads:
-        config["fastp"]["thread"]
+        extra="--length_required 25 --detect_adapter_for_pe"
     wrapper:
         "Unofficial/bio/fastp"
 
@@ -179,21 +173,20 @@ Cette regle realise l'indexation du genome de la souris avec bowtie2
 """
 rule bowtie2_index:
     input:
-        genome = op.join(config["datadir"], "Genome_souris", "GRCm38.primary_assembly.genome.fa.gz")
+        fasta = op.join(config["datadir"], "Genome_souris", "GRCm38.primary_assembly.genome.fa.gz")
     output:
-        op.join(config["outputdir"], "mouse_index", "bwt2_index/genome.1.bt2")
+        op.join(config["outputdir"], "mouse_index/mouse_genome_mm10.1.bt2")
     message:
         "On indexe le genome de {input} avec bowtie2"
-
     threads:
         config["bowtie2"]["threads"]
     log:
-        op.join(config["outputdir"], "bowtie2", "logs", "GRCm38.primary_assembly.genome.log")
+        op.join(config["outputdir"], "mouse_index", "logs", "GRCm38.primary_assembly.genome.log")
     params:
-        prefix = op.join("mouse_index/mouse_genome_mm10") #genome est mon prefixe
-
+        prefix="mouse_index/mouse_genome_mm10" #mouse_genome_mm10 est mon prefixe
     wrapper:
         "Unofficial/bio/bowtie2/build" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
+
 
 
 
@@ -202,25 +195,18 @@ Cette regle realise le mapping des reads sur le genome de la souris indexe avec 
 """
 rule bowtie2_mapping:
     input:
-        R1= op.join(config["outputdir"],  "fastp", "cleaned_filtered_{sample_wildcard}_1.fastq.gz"),
-        R2= op.join(config["outputdir"], "fastp", "cleaned_filtered_{sample_wildcard}_2.fastq.gz")
-
+        sample=["results/fastp/cleaned_filtered_{sample_wildcard}_1.fastq.gz", "results/fastp/cleaned_filtered_{sample_wildcard}_2.fastq.gz"]
     output:
         report(op.join(config["outputdir"], "bowtie2", "{sample_wildcard}.bam"), category="bowtie2 Reports", caption="bowtie2.rst")
-
     message:
         "On mappe les reads sur le genome avec bowtie2"
-
     threads:
-        config["bowtie2"]["threads"]
-
+        config["bowtie2"]["threads"] # Use at least two threads
     log:
         op.join(config["outputdir"], "bowtie2", "logs", "{sample_wildcard}.log")
-
     params:
         index="mouse_index/mouse_genome_mm10", # prefix of reference genome index (built with bowtie2-build)
         extra="--align-paired-reads"
-
     wrapper:
         "Unofficial/bio/bowtie2/align"
 
@@ -230,7 +216,6 @@ rule bowtie2_mapping:
 """
 Cette regle permet d'obtenir des statistiques sur le mapping des reads avec samtools_flagstat
 """
-
 
 rule samtools_flagstat:
     input:
@@ -261,7 +246,6 @@ rule multiQC:
 
 
 
-
 # """
 # Cette regle realise l'analyse FastqScreen de mes fichiers fastq.gz avant trimming
 # """
@@ -286,3 +270,70 @@ rule multiQC:
 #     shell:
 #         "fastq_screen {input.r} --outdir {params.outdir} --threads {threads} --aligner {params.aligner}  --conf {params.conf} &> {log}"
 #
+
+
+
+"""
+Cette regle permet de trier les fichiers bam en fonction de leurs coordonnees grace a samtools samtools_sort
+"""
+
+rule samtools_sort:
+    input:
+        op.join(config["outputdir"],  "bowtie2", "{sample_wildcard}.bam")
+    output:
+        op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"
+    params:
+        "-m 4G" # Approximately the maximum required memory per thread. To prevent sort from creating a huge number of temporary files, it enforces a minimum value of 1M for this setting.
+    threads:  # Samtools takes additional threads through its option -@. One thread for samtools. Other threads are *additional* threads passed to the argument -@.
+        8     # This value - 1 will be sent to -@.
+    wrapper:
+        "Unofficial/bio/samtools/sort"
+
+
+
+
+"""
+Cette regle permet de marquer les reads dupliques grace a picard
+"""
+
+rule mark_duplicates:
+    input:
+        op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"
+    output:
+        bam="results/picard/deduplicate_{sample_wildcard}.bam",
+        metrics="results/picard/deduplicate_{sample_wildcard}.metrics.txt"
+    log:
+        "results/picard/logs/deduplicate_{sample_wildcard}.log"
+    params:
+        "REMOVE_DUPLICATES=true" # If true do not write duplicates to the output file instead of writing them with appropriate flags set.
+    wrapper:
+        "Unofficial/bio/picard/markduplicates"
+
+
+
+"""
+Cette regle permet de verifier que l'on a recupere uniquement les flags des reads uniques bien mappes apres picard
+"""
+
+rule samtools_flagstat_picard:
+    input:
+        op.join(config["outputdir"], "picard", "deduplicate_{sample_wildcard}.bam")
+    output:
+        report(op.join(config["outputdir"], "samtools_flagstat", "deduplicate_{sample_wildcard}.bam.flagstat"), category="samtools_flagstat_apres_Picard Reports", caption="samtools_flagstat.rst")
+    wrapper:
+        "Unofficial/bio/samtools/flagstat"
+
+
+
+
+"""
+Cette regle permet d indexer les bam filtres grace a samtools_index pour visualiser dans IGV
+"""
+
+rule samtools_index:
+    input:
+        "results/picard/deduplicate_{sample_wildcard}.bam"
+    output:
+        "results/samtools_index/{sample_wildcard}.sorted.bam.bai"
+    wrapper:
+        "Unofficial/bio/samtools/index"
