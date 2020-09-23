@@ -52,7 +52,7 @@ fastp:
     thread: 8
     extra: "--length_required 25 --detect_adapter_for_pe"
 
-fastqscreen:
-    config: /store/EQUIPES/REMOD/scripts/fastq_screen.conf
-    threads: 8
-    aligner: "bowtie2"
+#fastqscreen:
+#    config: /store/EQUIPES/REMOD/scripts/fastq_screen.conf
+#    threads: 8
+#    aligner: "bowtie2"

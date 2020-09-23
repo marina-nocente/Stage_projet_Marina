@@ -115,7 +115,11 @@ rule all:
 #        expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.json"), sample_wildcard = list_ChIP),
 #        expand(op.join(config["outputdir"], "fastp", "fastp_{sample_wildcard}.html"), sample_wildcard = list_ChIP),
         op.join(config["outputdir"], "multiQC", "multiqc.html"),
-        expand(op.join(config["outputdir"], "bowtie2", "{sample_wildcard}.bam"), sample_wildcard = list_ChIP)
+#        expand(op.join(config["outputdir"], "bowtie2", "{sample_wildcard}.bam"), sample_wildcard = list_ChIP),
+#        expand(op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"), sample_wildcard = list_ChIP),
+        expand("results/picard/deduplicate_{sample_wildcard}.bam", sample_wildcard = list_ChIP),
+        expand("results/samtools_index/{sample_wildcard}.sorted.bam.bai", sample_wildcard = list_ChIP)
+
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
 
@@ -154,8 +158,8 @@ rule fastp:
         sample=["raw_data/{sample_wildcard}_1.fastq.gz", "raw_data/{sample_wildcard}_2.fastq.gz"]
     output:
         trimmed=["results/fastp/cleaned_filtered_{sample_wildcard}_1.fastq.gz", "results/fastp/cleaned_filtered_{sample_wildcard}_2.fastq.gz"],
-        html=report("results/fastp/{sample_wildcard}.html"), category="Fastp Reports", caption="fastp.rst"),
-        json=report("results/fastp/{sample_wildcard}.json"), category="Fastp Reports", caption="fastp.rst")
+        html=report("results/fastp/{sample_wildcard}.html", category="Fastp Reports", caption="fastp.rst"),
+        json=report("results/fastp/{sample_wildcard}.json", category="Fastp Reports", caption="fastp.rst")
     message:
         "Etape de trimming : on elimine les adaptateurs de {input} et on nettoie avec fastp"
     threads: 2
@@ -234,7 +238,9 @@ rule multiQC:
     input:
         expand("results/fastp/cleaned_filtered_ChIPseq_{list_fastq}.fastq.gz", list_fastq=["Oct4_rep1_1", "Oct4_rep1_2", "Oct4_rep2_1", "Oct4_rep2_1","TBP_rep1_1", "TBP_rep1_2", "TBP_rep2_1", "TBP_rep2_2", "Pol2_rep1_1", "Pol2_rep1_2","Pol2_rep2_1", "Pol2_rep2_2", "CTCF_1", "CTCF_2", "Chd8_rep1_1", "Chd8_rep1_2", "Chd8_rep2_1", "Chd8_rep2_2"]),
         expand("results/fastQC/ChIPseq_{list_fastq}_fastqc.zip", list_fastq=["Oct4_rep1_1", "Oct4_rep1_2", "Oct4_rep2_1", "Oct4_rep2_1","TBP_rep1_1", "TBP_rep1_2", "TBP_rep2_1", "TBP_rep2_2", "Pol2_rep1_1", "Pol2_rep1_2","Pol2_rep2_1", "Pol2_rep2_2", "CTCF_1", "CTCF_2", "Chd8_rep1_1", "Chd8_rep1_2", "Chd8_rep2_1", "Chd8_rep2_2"]),
-        expand("results/samtools_flagstat/ChIPseq_{list_sample}.bam.flagstat", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2'])
+        expand("results/samtools_flagstat/ChIPseq_{list_sample}.bam.flagstat", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']),
+        expand("results/picard/deduplicate_ChIPseq_{list_sample}.metrics.txt", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']),
+        expand("results/samtools_flagstat/deduplicate_ChIPseq_{list_sample}.bam.flagstat", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2'])
     output:
         report(op.join(config["outputdir"], "multiQC", "multiqc.html"), category="multiQC Reports", caption="multiqc.rst")
     message:
@@ -281,7 +287,7 @@ rule samtools_sort:
     input:
         op.join(config["outputdir"],  "bowtie2", "{sample_wildcard}.bam")
     output:
-        op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"
+        report(op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"), category="Samtools sort", caption="samtools_sort.rst"),
     params:
         "-m 4G" # Approximately the maximum required memory per thread. To prevent sort from creating a huge number of temporary files, it enforces a minimum value of 1M for this setting.
     threads:  # Samtools takes additional threads through its option -@. One thread for samtools. Other threads are *additional* threads passed to the argument -@.
@@ -298,10 +304,10 @@ Cette regle permet de marquer les reads dupliques grace a picard
 
 rule mark_duplicates:
     input:
-        op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"
+        op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam")
     output:
-        bam="results/picard/deduplicate_{sample_wildcard}.bam",
-        metrics="results/picard/deduplicate_{sample_wildcard}.metrics.txt"
+        bam=report("results/picard/deduplicate_{sample_wildcard}.bam", category="Picard Reports", caption="picard.rst"),
+        metrics=report("results/picard/deduplicate_{sample_wildcard}.metrics.txt", category="Picard Reports", caption="picard.rst")
     log:
         "results/picard/logs/deduplicate_{sample_wildcard}.log"
     params:
@@ -334,6 +340,6 @@ rule samtools_index:
     input:
         "results/picard/deduplicate_{sample_wildcard}.bam"
     output:
-        "results/samtools_index/{sample_wildcard}.sorted.bam.bai"
+        report("results/samtools_index/{sample_wildcard}.sorted.bam.bai", category="samtools index", caption="samtools_index.rst")
     wrapper:
         "Unofficial/bio/samtools/index"
