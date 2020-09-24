@@ -16,7 +16,7 @@ configfile: "./config.yaml"
 
 
 ## Faire une liste de mes fastq files à partir de ma liste d echantillons
-list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
+list_sample = ['Oct4_rep1']  # , 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
 STREAM = ["1", "2"]
 
 list_fastq = []
@@ -34,7 +34,7 @@ fastq_wildcard_constraints = "|".join(list_fastq)
 
 ## Faire une liste de mes samples files à partir de ma liste d'echantillons
 #print("*******************************************")
-list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
+# list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
 
 list_ChIP = []
 
@@ -118,7 +118,7 @@ rule all:
 #        expand(op.join(config["outputdir"], "bowtie2", "{sample_wildcard}.bam"), sample_wildcard = list_ChIP),
 #        expand(op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"), sample_wildcard = list_ChIP),
         expand("results/picard/deduplicate_{sample_wildcard}.bam", sample_wildcard = list_ChIP),
-        expand("results/samtools_index/{sample_wildcard}.sorted.bam.bai", sample_wildcard = list_ChIP)
+        expand("results/picard/deduplicate_{sample_wildcard}.bam.bai", sample_wildcard = list_ChIP)
 
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
@@ -134,8 +134,8 @@ rule fastqc:
     input:
         op.join(config["datadir"], "{fastq_wildcard}.fastq.gz")
     output:
-        report(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.html"), category="FastQC Reports", caption="fastqc.rst"),
-        report(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.zip"), category="FastQC Reports", caption="fastqc.rst")
+        html=report(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.html"), category="FastQC Reports", caption="fastqc.rst"),
+        zip=report(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.zip"), category="FastQC Reports", caption="fastqc.rst")
     message:
         "On controle la qualite avant trimming de {input}"
     threads:
@@ -143,8 +143,8 @@ rule fastqc:
     log:
         op.join(config["outputdir"], "fastQC", "logs", "{fastq_wildcard}.log")
     params:
-        outdir = op.join(config["outputdir"], "fastQC")
-
+        # outdir = op.join(config["outputdir"], "fastQC")
+	""
     wrapper:
         "Unofficial/bio/fastqc" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
 
@@ -173,11 +173,28 @@ rule fastp:
 
 
 """
+Cette regle telecharge le genome de la souris
+"""
+rule download_fasta:
+    output:
+        op.join(config["datadir"], "Genome_souris", "GRCm38.primary_assembly.genome.fa")
+    params:
+        species = "mus_musculus",
+        datatype = "dna",
+        build = "GRCm38",
+        release = "99"
+    log:
+        "logs/download/GRCm38.99.log"
+    wrapper:
+        "Unofficial/bio/reference/ensembl-sequence"
+
+
+"""
 Cette regle realise l'indexation du genome de la souris avec bowtie2
 """
 rule bowtie2_index:
     input:
-        fasta = op.join(config["datadir"], "Genome_souris", "GRCm38.primary_assembly.genome.fa.gz")
+        fasta = op.join(config["datadir"], "Genome_souris", "GRCm38.primary_assembly.genome.fa")
     output:
         op.join(config["outputdir"], "mouse_index/mouse_genome_mm10.1.bt2")
     message:
@@ -187,7 +204,7 @@ rule bowtie2_index:
     log:
         op.join(config["outputdir"], "mouse_index", "logs", "GRCm38.primary_assembly.genome.log")
     params:
-        prefix="mouse_index/mouse_genome_mm10" #mouse_genome_mm10 est mon prefixe
+        prefix="{}/mouse_index/mouse_genome_mm10".format(config["outputdir"]) #mouse_genome_mm10 est mon prefixe
     wrapper:
         "Unofficial/bio/bowtie2/build" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
 
@@ -199,18 +216,20 @@ Cette regle realise le mapping des reads sur le genome de la souris indexe avec 
 """
 rule bowtie2_mapping:
     input:
-        sample=["results/fastp/cleaned_filtered_{sample_wildcard}_1.fastq.gz", "results/fastp/cleaned_filtered_{sample_wildcard}_2.fastq.gz"]
+        sample=["results/fastp/cleaned_filtered_{sample_wildcard}_1.fastq.gz", "results/fastp/cleaned_filtered_{sample_wildcard}_2.fastq.gz"],
+        index = op.join(config["outputdir"], "mouse_index/mouse_genome_mm10.1.bt2")
     output:
         report(op.join(config["outputdir"], "bowtie2", "{sample_wildcard}.bam"), category="bowtie2 Reports", caption="bowtie2.rst")
     message:
         "On mappe les reads sur le genome avec bowtie2"
+    priority: 200
     threads:
         config["bowtie2"]["threads"] # Use at least two threads
     log:
         op.join(config["outputdir"], "bowtie2", "logs", "{sample_wildcard}.log")
     params:
-        index="mouse_index/mouse_genome_mm10", # prefix of reference genome index (built with bowtie2-build)
-        extra="--align-paired-reads"
+        index="{}/mouse_index/mouse_genome_mm10".format(config["outputdir"]), # prefix of reference genome index (built with bowtie2-build)
+        extra="" #  "--align-paired-reads"
     wrapper:
         "Unofficial/bio/bowtie2/align"
 
@@ -236,11 +255,11 @@ Cette regle permet de "resumer" les resultats de fastp grace a multiQC
 """
 rule multiQC:
     input:
-        expand("results/fastp/cleaned_filtered_ChIPseq_{list_fastq}.fastq.gz", list_fastq=["Oct4_rep1_1", "Oct4_rep1_2", "Oct4_rep2_1", "Oct4_rep2_1","TBP_rep1_1", "TBP_rep1_2", "TBP_rep2_1", "TBP_rep2_2", "Pol2_rep1_1", "Pol2_rep1_2","Pol2_rep2_1", "Pol2_rep2_2", "CTCF_1", "CTCF_2", "Chd8_rep1_1", "Chd8_rep1_2", "Chd8_rep2_1", "Chd8_rep2_2"]),
-        expand("results/fastQC/ChIPseq_{list_fastq}_fastqc.zip", list_fastq=["Oct4_rep1_1", "Oct4_rep1_2", "Oct4_rep2_1", "Oct4_rep2_1","TBP_rep1_1", "TBP_rep1_2", "TBP_rep2_1", "TBP_rep2_2", "Pol2_rep1_1", "Pol2_rep1_2","Pol2_rep2_1", "Pol2_rep2_2", "CTCF_1", "CTCF_2", "Chd8_rep1_1", "Chd8_rep1_2", "Chd8_rep2_1", "Chd8_rep2_2"]),
-        expand("results/samtools_flagstat/ChIPseq_{list_sample}.bam.flagstat", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']),
-        expand("results/picard/deduplicate_ChIPseq_{list_sample}.metrics.txt", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']),
-        expand("results/samtools_flagstat/deduplicate_ChIPseq_{list_sample}.bam.flagstat", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2'])
+        expand("results/fastp/cleaned_filtered_{list_fastq}.fastq.gz", list_fastq=list_fastq), # ["Oct4_rep1_1", "Oct4_rep1_2", "Oct4_rep2_1", "Oct4_rep2_1","TBP_rep1_1", "TBP_rep1_2", "TBP_rep2_1", "TBP_rep2_2", "Pol2_rep1_1", "Pol2_rep1_2","Pol2_rep2_1", "Pol2_rep2_2", "CTCF_1", "CTCF_2", "Chd8_rep1_1", "Chd8_rep1_2", "Chd8_rep2_1", "Chd8_rep2_2"]),
+        expand("results/fastQC/{list_fastq}_fastqc.zip", list_fastq=list_fastq), # ["Oct4_rep1_1", "Oct4_rep1_2", "Oct4_rep2_1", "Oct4_rep2_1","TBP_rep1_1", "TBP_rep1_2", "TBP_rep2_1", "TBP_rep2_2", "Pol2_rep1_1", "Pol2_rep1_2","Pol2_rep2_1", "Pol2_rep2_2", "CTCF_1", "CTCF_2", "Chd8_rep1_1", "Chd8_rep1_2", "Chd8_rep2_1", "Chd8_rep2_2"]),
+        expand("results/samtools_flagstat/ChIPseq_{list_sample}.bam.flagstat", list_sample=list_sample), # ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']),
+        expand("results/picard/deduplicate_ChIPseq_{list_sample}.metrics.txt", list_sample=list_sample), # ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']),
+        expand("results/samtools_flagstat/deduplicate_ChIPseq_{list_sample}.bam.flagstat", list_sample=list_sample) # ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2'])
     output:
         report(op.join(config["outputdir"], "multiQC", "multiqc.html"), category="multiQC Reports", caption="multiqc.rst")
     message:
@@ -287,9 +306,11 @@ rule samtools_sort:
     input:
         op.join(config["outputdir"],  "bowtie2", "{sample_wildcard}.bam")
     output:
-        report(op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"), category="Samtools sort", caption="samtools_sort.rst"),
+        report(op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"), category="Samtools sort", caption="samtools_sort.rst")
+    resources:
+        mem_mb = 1024 * 6
     params:
-        "-m 4G" # Approximately the maximum required memory per thread. To prevent sort from creating a huge number of temporary files, it enforces a minimum value of 1M for this setting.
+        " " # Approximately the maximum required memory per thread. To prevent sort from creating a huge number of temporary files, it enforces a minimum value of 1M for this setting.
     threads:  # Samtools takes additional threads through its option -@. One thread for samtools. Other threads are *additional* threads passed to the argument -@.
         8     # This value - 1 will be sent to -@.
     wrapper:
@@ -311,7 +332,7 @@ rule mark_duplicates:
     log:
         "results/picard/logs/deduplicate_{sample_wildcard}.log"
     params:
-        "REMOVE_DUPLICATES=true" # If true do not write duplicates to the output file instead of writing them with appropriate flags set.
+        "REMOVE_DUPLICATES=true VALIDATION_STRINGENCY=SILENT " # If true do not write duplicates to the output file instead of writing them with appropriate flags set.
     wrapper:
         "Unofficial/bio/picard/markduplicates"
 
@@ -340,6 +361,6 @@ rule samtools_index:
     input:
         "results/picard/deduplicate_{sample_wildcard}.bam"
     output:
-        report("results/samtools_index/{sample_wildcard}.sorted.bam.bai", category="samtools index", caption="samtools_index.rst")
+        report("results/picard/deduplicate_{sample_wildcard}.bam.bai", category="samtools index", caption="samtools_index.rst")
     wrapper:
         "Unofficial/bio/samtools/index"
