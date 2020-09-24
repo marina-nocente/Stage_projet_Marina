@@ -79,7 +79,7 @@ Bowtie2 mappe les reads paires sur le genome indexe de la souris mm10.
 Le resultat de bowtie2 est des fichiers au format .bam.
 
 
-## Verification de la qualité de l'alignement
+## Etape 4 : Verification de la qualité de l'alignement
 
 samtools flagstat prend en entree des fichiers .bam issus de l'alignement.
 Samtools flagstat permet d'acceder a differentes informations sur le mapping de nos echantillons (on recherche des information sur les flag dans un fichier bam).
@@ -94,7 +94,7 @@ On peut ainsi acceder a ces informations :
 - singletons : nombre de reads apparies ou l’un est mappe et pas l’autre.
 
 
-## Tri des fichiers bam:
+## Etape 5 : Tri des fichiers bam:
 
 samtools sort prend en entree des fichiers .bam.
 
@@ -104,7 +104,7 @@ L'utilisation de certains outils, comme Picard, nécessite que les reads dans le
 On obtient donc en sortie des fichiers tries au format .bam.
 
 
-## Marquage et élimination des reads dupliqués:
+## Etape 6 : Marquage et élimination des reads dupliqués:
 
 Picard Markduplicates prend en entree des fichiers .bam tries (les reads sont tries en fonction de leurs coordonnees).
 
@@ -115,20 +115,20 @@ Picard fournit egalement un fichier "metrics" qui indique le nombre de reads dup
 __https://gatk.broadinstitute.org/hc/en-us/articles/360037225972-MarkDuplicates-Picard-
 
 
-## Vérification du fichier de sortie de Picard
+## Etape 7 : Vérification du fichier de sortie de Picard
 
 On vérifie à l'aide de samtools flagstat que les reads dupliqués n'ont pas été écrits dans le bam de sortie.
 On veut uniquement des reads qui sont uniques et "bien mappés" (flag = 99, 147, 83, 163).
 
 
-## Création d'un bam indexé pour la visualisation sous IGV des reads mappés dédupliqués.
+## Etape 8 : Création d'un bam indexé pour la visualisation sous IGV des reads mappés dédupliqués.
 
 samtools index prend en entrée des fichiers .bam où les reads ont été triés et dédupliqués.
 
 samtools index permet d'indexer des fichiers .bam et de fournir des fichiers .bam.bai afin de visualiser les reads alignes, tries et dedupliques sous IGV.
 
 
-## Peak-calling
+## Etape 9 : Peak-calling
 
 Les reads nettoyés et dédupliqués au format .bam sont utilisés en input par MACS2 pour faire le peak-calling.
 
