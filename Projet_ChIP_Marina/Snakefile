@@ -118,7 +118,11 @@ rule all:
 #        expand(op.join(config["outputdir"], "bowtie2", "{sample_wildcard}.bam"), sample_wildcard = list_ChIP),
 #        expand(op.join(config["outputdir"],  "samtools_sort", "{sample_wildcard}.sorted.bam"), sample_wildcard = list_ChIP),
         expand("results/picard/deduplicate_{sample_wildcard}.bam", sample_wildcard = list_ChIP),
-        expand("results/samtools_index/{sample_wildcard}.sorted.bam.bai", sample_wildcard = list_ChIP)
+        expand("results/samtools_index/{sample_wildcard}.sorted.bam.bai", sample_wildcard = list_ChIP),
+        expand("results/macs2/{sample_wildcard}_peaks.narrowPeak", sample_wildcard = list_ChIP),
+        expand("results/macs2/{sample_wildcard}_summits.bed", sample_wildcard = list_ChIP),
+        expand("results/macs2/{sample_wildcard}_treat_pileup.bdg", sample_wildcard = list_ChIP)
+
 
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
@@ -240,7 +244,8 @@ rule multiQC:
         expand("results/fastQC/ChIPseq_{list_fastq}_fastqc.zip", list_fastq=["Oct4_rep1_1", "Oct4_rep1_2", "Oct4_rep2_1", "Oct4_rep2_1","TBP_rep1_1", "TBP_rep1_2", "TBP_rep2_1", "TBP_rep2_2", "Pol2_rep1_1", "Pol2_rep1_2","Pol2_rep2_1", "Pol2_rep2_2", "CTCF_1", "CTCF_2", "Chd8_rep1_1", "Chd8_rep1_2", "Chd8_rep2_1", "Chd8_rep2_2"]),
         expand("results/samtools_flagstat/ChIPseq_{list_sample}.bam.flagstat", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']),
         expand("results/picard/deduplicate_ChIPseq_{list_sample}.metrics.txt", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']),
-        expand("results/samtools_flagstat/deduplicate_ChIPseq_{list_sample}.bam.flagstat", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2'])
+        expand("results/samtools_flagstat/deduplicate_ChIPseq_{list_sample}.bam.flagstat", list_sample=['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']),
+        expand("results/macs2/ChIPseq_{list_sample}_peaks.xls", list_sample=list_sample)
     output:
         report(op.join(config["outputdir"], "multiQC", "multiqc.html"), category="multiQC Reports", caption="multiqc.rst")
     message:
@@ -343,3 +348,36 @@ rule samtools_index:
         report("results/samtools_index/{sample_wildcard}.sorted.bam.bai", category="samtools index", caption="samtools_index.rst")
     wrapper:
         "Unofficial/bio/samtools/index"
+
+
+
+
+"""
+Cette regle permet de faire du peak-calling avec MACS2
+"""
+
+rule callpeak:
+    input:
+        treatment="results/picard/deduplicate_{sample_wildcard}.bam",   # required: treatment sample(s)
+        #control=""      # optional: control sample(s)
+    output:
+        # all output-files must share the same basename and only differ by it's extension
+        # Usable extensions (and which tools they implicitly call) are listed here:
+        #         https://snakemake-wrappers.readthedocs.io/en/stable/wrappers/macs2/callpeak.html.
+        report(multiext("results/macs2/{sample_wildcard}",
+                 "_peaks.xls",   ### required, a table with information about called peaks
+                 ### optional output files
+                 "_peaks.narrowPeak", # contains the peak locations, peak summit, p-value and q-value
+                 "_summits.bed", # eak summits locations for every peak
+                 ### these output extensions internally set the --bdg or -B option:
+                 "_treat_pileup.bdg" # pileup signals from treatment sample
+                 ), category="MACS2", caption="macs2.rst")
+    log:
+        "results/macs2/callpeak_{sample_wildcard}.log"
+    params:
+        "-f BAM -g mm --nomodel"
+        # -f : Format of tag file is bam,
+        # -g : It's the mappable genome size or effective genome size which is defined as the genome size which can be sequenced.
+        # --nomodel : While on, MACS will bypass building the shifting model.
+    wrapper:
+        "Unofficial/bio/macs2/callpeak"
