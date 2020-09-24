@@ -8,7 +8,7 @@ Les reads nettoyes et dedepliques au format .bam sont utilises en input par MACS
 
 Outil utilise et resultats:
 ===========================
-Le peak-calling est une methode qui permet d'identifier les zones du genome qui ont ete enrichiees avec les reads alignes suite a une experience de ChIP-seq.
+Le peak-calling est une methode qui permet d'identifier les zones du genome qui ont ete enrichies avec les reads alignes suite a une experience de ChIP-seq.
 Pour faire cela, on utilise l'outil MACS2.
 
 J'ai utilise les options suivantes :
