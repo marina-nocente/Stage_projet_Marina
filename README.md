@@ -59,7 +59,7 @@ On obtient ainsi des reads nettoyes au format fastq.gz et un rapport de ce que f
 
 ### Indexation du génome mm10
 
-J'ai pris le FASTA du genome de la souris sur GENCODE: "contenu Genome sequence, primary assembly (GRCm38) mm10, region PRI. Nucleotide sequence of the GRCm38 primary genome assemby (chromosomes and scaffolds (suffisant pour ce que l'on veut nous, pas besoin du reste)). The sequence region names are in the same as in the GTF/GFF file".
+J'ai pris le FASTA du genome de la souris sur ENSEMBL: "contenu Genome sequence, primary assembly (GRCm38) mm10, region PRI. Nucleotide sequence of the GRCm38 primary genome assemby (chromosomes and scaffolds (suffisant pour ce que l'on veut nous, pas besoin du reste)). The sequence region names are in the same as in the GTF/GFF file".
 
 J'ai utilisé bowtie2 pour indexé le génome.
 
@@ -149,14 +149,48 @@ Le fichier "peaks.narrowPeak"  est un format BED 6 + 4 (6eres colonnes d'un fich
 
 # Lancement du snakefile pour test :
 
+## Permet de tester le Snakefile
+```{bash, eval=FALSE}
+
+snakemake --configfile config.yaml --snakefile Snakefile -j5 --printshellcmd --use-conda --reason --wrapper-prefix https://raw.githubusercontent.com/tdayris/snakemake-wrappers/ --dryrun
+
+```
+
 ## Permet d'afficher une image du pipeline
 ```{bash, eval=FALSE}
 snakemake --configfile config.yaml --snakefile Snakefile -j1 --printshellcmd --use-conda --dryrun --reason --rulegraph | dot -T png > test.png
 
 eog test.png
 
-snakemake --configfile config.yaml --snakefile Snakefile -j5 --printshellcmd --use-conda --reason --wrapper-prefix https://raw.githubusercontent.com/tdayris/snakemake-wrappers/
-
 ```
+
+
+# Modification du Snakefile pour le lancer sur le cluster de l'IGR:
+
+Pour chacune de mes règles du Snakefile, il faut définir la mémoire, le temps d'exécution et le nombre de threads.
+
+## Fonction lambda
+
+En python (existe aussi dans d'autres languages), une fonction lambda est une très petite fonction, qui fait quelque chose d'assez simple et qui est peu utilisée.
+Cette fonction lambda n'a pas de nom, mais elle a des arguments.
+
+Ex :
+lambda wildcare attempt : 1024 * 10
+avec :
+lamda : fonction lambda
+wildcare : argument 1 (si on veut faire un traitement sur un fichier en particulier par ex)
+attempt : argument 2 (si une regle échoue, on peut la relancer en reservant un peu plus de resources)
+: = retourne
+1024 * 10 : valeur de l'argument attempt
+
+
+
+## le paramètre "resource" dans un Snakefile:
+
+
+
+
+
+
 
 

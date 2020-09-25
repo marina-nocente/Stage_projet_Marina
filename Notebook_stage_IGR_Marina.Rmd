@@ -349,3 +349,9 @@ file:///home/mnocente/snakemake-wrappers/docs/_build/html/wrappers/picard/markdu
 - NAME_summits.bed : peak summits locations for every peak = emplacements des sommets pour chaque pic (BED, option : if not set –broad)
 
 
+### Lancement sur le cluster IGR
+
+```{bash, eval=FALSE}
+snakemake --profile slurm -n
+```
+

@@ -3,4 +3,4 @@ raw_data
 logs
 results
 
-.snakemake
+*/.snakemake/*
