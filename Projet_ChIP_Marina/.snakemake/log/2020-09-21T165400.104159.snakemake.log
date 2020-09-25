@@ -1,3 +1,0 @@
-NameError in line 38 of /home/mnocente/Bureau/Stage_projet_Marina/Projet_ChIP_Marina/Snakefile:
-name 'sample_wildcard_test' is not defined
-  File "/home/mnocente/Bureau/Stage_projet_Marina/Projet_ChIP_Marina/Snakefile", line 38, in <module>
