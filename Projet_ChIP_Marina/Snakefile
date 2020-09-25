@@ -16,7 +16,7 @@ configfile: "./config.yaml"
 
 
 ## Faire une liste de mes fastq files à partir de ma liste d echantillons
-list_sample = ['Oct4_rep1']  # , 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
+list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
 STREAM = ["1", "2"]
 
 list_fastq = []
@@ -33,8 +33,6 @@ fastq_wildcard_constraints = "|".join(list_fastq)
 
 
 ## Faire une liste de mes samples files à partir de ma liste d'echantillons
-#print("*******************************************")
-# list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
 
 list_ChIP = []
 
@@ -62,49 +60,9 @@ wildcard_constraints:
 report: "report_analyse_ChIP-seq_Marina.rst"
 
 
-
-
-
 #############################################################
 
 
-
-# def getSamplePaired(samples):
-#     dataDir = config["datadir"]
-#     #print(samples)
-#     sample = []
-#     endExt = {}
-#     for sam in samples:
-#         startSam = op.commonprefix([samples[sam]["r1"], samples[sam]["r2"]])
-#         sample.append(startSam)
-#         r1 = op.join(dataDir, samples[sam]["r1"])
-#         r2 = op.join(dataDir, samples[sam]["r2"])
-#         endExt[startSam] = [r1, r2]
-#     return(sample, endExt)
-#
-# SAMPLE, endExt = getSamplePaired(config["samples"])
-# print(SAMPLE)
-# SAMPLE_ID = []
-# for i in SAMPLE:
-#     r1 = i+"1"
-#     r2 = i+"2"
-#     SAMPLE_ID.append(r1)
-#     SAMPLE_ID.append(r2)
-# print(SAMPLE_ID)
-#
-# if "--cluster" in sys.argv or "-c" in sys.argv :
-#     print("cluster mode")
-#     shell.prefix("set -ieuop pipefail; ")
-#
-#
-#
-# """
-# La toute premiere regle, c'est ce que je veux a la fin (comme en cuisine: mon gateau!):
-# """
-# shell.prefix("set -ieuop pipefail; ")
-
-#
-#
 rule all:
     input:
 #        expand(op.join(config["outputdir"], "fastQC", "{fastq_wildcard}_fastqc.html"), fastq_wildcard = list_fastq),
@@ -128,6 +86,9 @@ rule all:
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
 
 #        expand(op.join(config["outputdir"], "samtools_flagstat", "{sample_wildcard}.bam.flagstat"), sample_wildcard = list_ChIP)
+
+
+
 ##############################################################
 
 
@@ -152,7 +113,6 @@ rule fastqc:
     log:
         op.join(config["outputdir"], "fastQC", "logs", "{fastq_wildcard}.log")
     params:
-        # outdir = op.join(config["outputdir"], "fastQC")
 	""
     wrapper:
         "Unofficial/bio/fastqc" # le numero des wrappers doivent être mis à jour quand l'outil est lui meme mis a jour
