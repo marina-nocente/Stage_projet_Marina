@@ -46,10 +46,10 @@ fastqc:
     threads: 1 # en pratique ca ne sert a rien de mettre ce parametre car il est deja par defaut.
 
 bowtie2:
-    threads: 8
+    threads: 20
 
 fastp:
-    thread: 8
+    thread: 20
     extra: "--length_required 25 --detect_adapter_for_pe"
 
 #fastqscreen:
