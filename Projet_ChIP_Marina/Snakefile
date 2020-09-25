@@ -201,6 +201,7 @@ rule download_fasta:
         release = "99"
     log:
         "logs/download/GRCm38.99.log"
+    threads: 1
     resources:
         mem_mb = lambda wildcards, attempt: min(128 + (512 * attempt), 1024),
         time_min = lambda wildcards, attempt: 120 + (120 * attempt)
@@ -276,6 +277,7 @@ rule samtools_flagstat:
         op.join(config["outputdir"],  "bowtie2", "{sample_wildcard}.bam")
     output:
         report(op.join(config["outputdir"], "samtools_flagstat", "{sample_wildcard}.bam.flagstat"), category="samtools_flagstat Reports", caption="samtools_flagstat.rst")
+    threads: 1
     resources:
         mem_mb = lambda wildcards, attempt: min((1024 * 1) + (1 * attempt), 2 * 1024),
         time_min = lambda wildcards, attempt: 10 + (20 * attempt)
@@ -303,6 +305,7 @@ rule multiQC:
         "MulitQC permet de présenter un resume des resultats de fastp sur {input}"
     log:
         op.join(config["outputdir"], "multiQC", "logs", "multiqc.log")
+    threads: 1
     resources:
         mem_mb = lambda wildcards, attempt: min((1024 * 1) + (2 * attempt), 4 * 1024),
         time_min = lambda wildcards, attempt: 30 + (60 * attempt)
@@ -381,6 +384,7 @@ rule mark_duplicates:
     resources:
         mem_mb = lambda wildcards, attempt: min((1024 * 5) + (3 * attempt), 10 * 1024),
         time_min = lambda wildcards, attempt: 45 + (15 * attempt)
+    threads: 1
     params:
         "REMOVE_DUPLICATES=true VALIDATION_STRINGENCY=SILENT " # If true do not write duplicates to the output file instead of writing them with appropriate flags set.
     wrapper:
@@ -402,6 +406,7 @@ rule samtools_flagstat_picard:
     resources:
         mem_mb = lambda wildcards, attempt: min((1024 * 1) + (2 * attempt), 4 * 1024),
         time_min = lambda wildcards, attempt: 10 + (10 * attempt)
+    threads: 1
     wrapper:
         "Unofficial/bio/samtools/flagstat"
 
@@ -422,6 +427,7 @@ rule samtools_index:
     resources:
         mem_mb = lambda wildcards, attempt: min((1024 * 1) + (1 * attempt), 3 * 1024),
         time_min = lambda wildcards, attempt: 5 + (15 * attempt)
+    threads: 1
     wrapper:
         "Unofficial/bio/samtools/index"
 
@@ -454,6 +460,7 @@ rule callpeak:
     resources:
         mem_mb = lambda wildcards, attempt: min((1024 * 8) + (2 * attempt), 10 * 1024),
         time_min = lambda wildcards, attempt: 60 + (60 * attempt)
+    threads: 1
     params:
         "-f BAM -g mm --nomodel"
         # -f : Format of tag file is bam,
