@@ -40,8 +40,8 @@ Nous allons utiliser des wrappers. Les wrappers snakemake sont une collection de
 ## Utilisation des wrappers
 
 J'utilise les wrappers dont Thibault a rendu disponible le code.
-[GitHub de Thibault pour acceder a ses wrappers][(https://github.com/tdayris-perso/snakemake-wrappers)]
-[Ex de la doc du wrapper de Picard markduplicates][(file:///home/mnocente/snakemake-wrappers/docs/_build/html/wrappers/picard/markduplicates.html)]
+[GitHub de Thibault pour acceder a ses wrappers](https://github.com/tdayris-perso/snakemake-wrappers)
+[Ex de la doc du wrapper de Picard markduplicates](file:///home/mnocente/snakemake-wrappers/docs/_build/html/wrappers/picard/markduplicates.html)
 
 
 ```{bash, eval=FALSE}
@@ -71,7 +71,7 @@ Dans le fichier de resultat de fastQC, on peut ainsi acceder a differentes rubri
 
 Les differentes rubriques du rapport fastQC aident a prendre des decisions pour le trimming des fichiers fastq.gz.
 
-[doc fastQC][(https://dnacore.missouri.edu/PDF/FastQC_Manual.pdf)]
+[doc fastQC](https://dnacore.missouri.edu/PDF/FastQC_Manual.pdf)
 
 ## Etape 2 : trimming des reads
 
@@ -87,8 +87,8 @@ Voici quelques caracteristiques de l'outil fastp (d'apres sa documentation):
 
 On obtient ainsi des reads nettoyes au format fastq.gz et un rapport de ce que fastp a fait au format .html ou .json.
 
-[manuel options fastp][(https://manpages.debian.org/testing/fastp/fastp.1.en.html)]
-[github fastp][(https://github.com/OpenGene/fastp#features)]
+[manuel options fastp](https://manpages.debian.org/testing/fastp/fastp.1.en.html)
+[github fastp](https://github.com/OpenGene/fastp#features)
 
 
 ## Etape 3 : Alignement des reads sur le génome de référence de la souris
@@ -114,7 +114,7 @@ Bowtie2 mappe les reads paires sur le genome indexe de la souris mm10.
 
 Le resultat de bowtie2 est des fichiers au format .bam.
 
-[doc bowtie2][(http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml)]
+[doc bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml)
 
 
 ## Etape 4 : Verification de la qualité de l'alignement
@@ -131,7 +131,7 @@ On peut ainsi acceder a ces informations :
 - with itself and mate mapped : nombre de reads apparies où les deux sont mappes.
 - singletons : nombre de reads apparies ou l’un est mappe et pas l’autre.
 
-[doc samtools_flagstat][(http://www.htslib.org/doc/samtools-flagstat.html)]
+[doc samtools_flagstat](http://www.htslib.org/doc/samtools-flagstat.html)
 
 
 ## Etape 5 : Tri des fichiers bam:
@@ -143,7 +143,7 @@ Ainsi, si deux reads ont les meme coordonnees ils seront ecrits a la suite.
 L'utilisation de certains outils, comme Picard, nécessite que les reads dans les fichiers .bam soient tries par leur coordonnees.
 On obtient donc en sortie des fichiers tries au format .bam.
 
-[doc samtools_sort][(http://www.htslib.org/doc/samtools-sort.html)]
+[doc samtools_sort](http://www.htslib.org/doc/samtools-sort.html)
 
 
 
@@ -155,8 +155,8 @@ Picard Markduplicates va reperer les duplicats dans les fichiers bam et va les m
 Grace a l'option "REMOVE_DUPLICATES=true", les reads dupliqués ne seront pas ecrits dans les fichiers .bam de sortie, ils sont directement éliminés.
 Picard fournit egalement un fichier "metrics" qui indique le nombre de reads dupliques.
 
-[doc Picard markDuplicates][(https://gatk.broadinstitute.org/hc/en-us/articles/360037225972-MarkDuplicates-Picard-)]
-[gitHub Picard][(https://broadinstitute.github.io/picard/)]
+[doc Picard markDuplicates](https://gatk.broadinstitute.org/hc/en-us/articles/360037225972-MarkDuplicates-Picard-)
+[gitHub Picard](https://broadinstitute.github.io/picard/)
 
 
 ## Etape 7 : Vérification du fichier de sortie de Picard
@@ -164,7 +164,7 @@ Picard fournit egalement un fichier "metrics" qui indique le nombre de reads dup
 On vérifie à l'aide de samtools flagstat que les reads dupliqués n'ont pas été écrits dans le bam de sortie.
 On veut uniquement des reads qui sont uniques et "bien mappés" (flag = 99, 147, 83, 163).
 
-[doc samtools_flagstat][(http://www.htslib.org/doc/samtools-flagstat.html)]
+[doc samtools_flagstat](http://www.htslib.org/doc/samtools-flagstat.html)
 
 
 ## Etape 8 : Création d'un bam indexé pour la visualisation sous IGV des reads mappés dédupliqués.
@@ -173,7 +173,7 @@ samtools index prend en entrée des fichiers .bam où les reads ont été triés
 
 samtools index permet d'indexer des fichiers .bam et de fournir des fichiers .bam.bai afin de visualiser les reads alignes, tries et dedupliques sous IGV.
 
-[doc samtools_index][(http://www.htslib.org/doc/samtools-index.html)]
+[doc samtools_index](http://www.htslib.org/doc/samtools-index.html)
 
 
 ## Etape 9 : Peak-calling
@@ -193,8 +193,8 @@ J'ai utilisé les options suivantes :
 
 Le fichier "peaks.narrowPeak"  est un format BED 6 + 4 (6eres colonnes d'un fichier BED standard (chromosome, coordonnees start, coordonnees end, name, score, brin) avec 4 champs supplementaires (signalValue (Measurement of overall enrichment for the region), pValue, qValue et peak).
 
-[doc macs2 callpeak][(https://hbctraining.github.io/Intro-to-ChIPseq/lessons/05_peak_calling_macs.html)]
-[autre doc macs2 callpeak][(https://github.com/macs3-project/MACS)]
+[doc macs2 callpeak](https://hbctraining.github.io/Intro-to-ChIPseq/lessons/05_peak_calling_macs.html)
+[autre doc macs2 callpeak](https://github.com/macs3-project/MACS)
 
 
 ## Etape 10 : Annotation des peaks
@@ -204,8 +204,8 @@ On va pouvoir obtenir des listes de peaks avec leur annotation, des graphes pour
 Les analyses d'enrichissement fonctionnel pourront se faire sur un seul facteur ou en intégrant mes différents facteurs.
 On pourra utiliser les bases de données GO (gènes qui ont des choses en communs) ou KEG (réaction et voies de signalisation liés entre eux).
 
-[github de chipseeker][(https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/sessionV/lessons/12_annotation_functional_analysis.html)]
-[autre doc de chipseeker][(http://bioconductor.org/packages/devel/bioc/vignettes/ChIPseeker/inst/doc/ChIPseeker.html#abstract)]
+[github de chipseeker](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/sessionV/lessons/12_annotation_functional_analysis.html)
+[autre doc de chipseeker](http://bioconductor.org/packages/devel/bioc/vignettes/ChIPseeker/inst/doc/ChIPseeker.html#abstract)
 
 
 # Lancement du snakefile pour test :
@@ -277,9 +277,11 @@ snakemake --profile slurm -n
 ## Lancement d'un Snakefile sur le cluster avec exécution:
 ```{bash, eval=FALSE}
 snakemake --profile slurm
+
+nohup snakemake --profile slurm --rerun-incomplete > nohup.ok.log 2> nohup.errors.log &
 ```
 
-[option --profile de Snakemake][(https://snakemake.readthedocs.io/en/stable/executing/cli.html?highlight=--profile)]
+[option --profile de Snakemake](https://snakemake.readthedocs.io/en/stable/executing/cli.html?highlight=--profile)
 
 l'option --profile slurm de snakemake permet de lancer le Snakefile grace à un fichier de configuration "slurm" dans lequel est écrit tous les environnements et options que l'on veut pour snakemake.
 Ce fichier est ici : "~/.config/snakemake/slurm/config.yaml"
@@ -303,7 +305,13 @@ use-conda: true # utilise conda
 ~                 
 
 Il a été crée par Thibault et provient de son GitHub :
-[GitHUb Thibault pour slurm][(https://github.com/tdayris-perso/slurm)]
+[GitHUb Thibault pour slurm](https://github.com/tdayris-perso/slurm)
+
+
+nohup permet de détacher la commande du parent (on veut que le processus continu comme un orphelin).
+& (esperluette) permet de reprendre la main, c'est-à-dire que la commande est mise en arrière plan.
+--rerun-incomplete permet de dire à snakemake que l'on veut qu'il recommence le job qu'il a commencé et pas fini (car on l'a arrêté).
+
 
 
 ## Donner des droits:
@@ -318,4 +326,4 @@ Afin d'éviter qu'une personne travaillant sur le cluster puisse modifier mes fi
 Par exemple : 
 trimmed=protected(["results/fastp/cleaned_filtered_{sample_wildcard}_1.fastq.gz", "results/fastp/cleaned_filtered_{sample_wildcard}_2.fastq.gz"])
 
-[option --protected de Snakemake][(https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html?highlight=protected#protected-and-temporary-files)]
+[option --protected de Snakemake](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html?highlight=protected#protected-and-temporary-files)
