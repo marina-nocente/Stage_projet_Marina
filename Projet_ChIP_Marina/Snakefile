@@ -16,7 +16,7 @@ configfile: "./config.yaml"
 
 
 ## Faire une liste de mes fastq files à partir de ma liste d echantillons
-list_sample = ['Oct4_rep1']  # , 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
+list_sample = ['Oct4_rep1', 'Oct4_rep2', 'TBP_rep1', 'TBP_rep2', 'Pol2_rep1', 'Pol2_rep2', 'CTCF', 'Chd8_rep1', 'Chd8_rep2']
 STREAM = ["1", "2"]
 
 list_fastq = []
