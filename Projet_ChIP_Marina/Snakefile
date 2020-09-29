@@ -481,4 +481,4 @@ rule suppression_contig:
     log:
         "results/macs2/just_chr_{sample_wildcard}_peaks.narrowPeak"
     shell:
-        'grep "chr" "results/macs2/{sample_wildcard}_peaks.narrowPeak" > "results/macs2/just_chr_{sample_wildcard}_peaks.narrowPeak"'
+        'grep "chr" {input}} > {output}'
