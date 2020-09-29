@@ -80,7 +80,8 @@ rule all:
         expand("results/macs2/{sample_wildcard}_peaks.narrowPeak", sample_wildcard = list_ChIP),
         expand("results/macs2/{sample_wildcard}_summits.bed", sample_wildcard = list_ChIP),
         expand("results/macs2/{sample_wildcard}_treat_pileup.bdg", sample_wildcard = list_ChIP),
-        expand("results/bigwig/{sample_wildcard}.bw", sample_wildcard = list_ChIP)
+        expand("results/bigwig/{sample_wildcard}.bw", sample_wildcard = list_ChIP),
+        expand("results/macs2/just_chr_{sample_wildcard}_peaks.narrowPeak", sample_wildcard = list_ChIP)
 
 
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
@@ -408,7 +409,7 @@ rule callpeak:
         # all output-files must share the same basename and only differ by it's extension
         # Usable extensions (and which tools they implicitly call) are listed here:
         #         https://snakemake-wrappers.readthedocs.io/en/stable/wrappers/macs2/callpeak.html.
-        protected(report(multiext("results/macs2/{sample_wildcard}",
+        (report(multiext("results/macs2/{sample_wildcard}",
                         "_peaks.xls",   ### required, a table with information about called peaks
                         ### optional output files
                         "_peaks.narrowPeak", # contains the peak locations, peak summit, p-value and q-value
@@ -439,7 +440,7 @@ rule test_deeptools_bamcoverage:
     input:
         bam = "results/picard/deduplicate_{sample_wildcard}.bam"
     output:
-        coverage = protected("results/bigwig/{sample_wildcard}.bw")
+        coverage = "results/bigwig/{sample_wildcard}.bw"
     message:
         "Testing deeptools bamcoverage"
     threads:
@@ -458,5 +459,26 @@ rule test_deeptools_bamcoverage:
 
 
 """
-Cette regle permet de lancer le script R qui execute ChIPseeker
+Cette regle permet de supprimer les peaks qui sont au niveau de region contig sur le genome
 """
+
+rule suppression_contig:
+    input:
+        "results/macs2/{sample_wildcard}_peaks.narrowPeak"
+    output:
+        "results/macs2/just_chr_{sample_wildcard}_peaks.narrowPeak"
+    message:
+        "Suppression des peaks tombant dans les regions contigs"
+    threads:
+        1
+    resources:
+        mem_mb = (
+            lambda wildcards, attempt: min(attempt * 1024, 10240)
+        ),
+        time_min = (
+            lambda wildcards, attempt: min(attempt * 20, 200)
+        )
+    log:
+        "results/macs2/just_chr_{sample_wildcard}_peaks.narrowPeak"
+    shell:
+        'grep "chr" "{sample_wildcard}_peaks.narrowPeak" > "just_chr_{sample_wildcard}_peaks.narrowPeak"'

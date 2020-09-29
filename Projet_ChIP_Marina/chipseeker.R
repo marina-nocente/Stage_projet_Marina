@@ -8,18 +8,7 @@
 
 #### Intallation du package ChIPseeker et de l'annotation des genes #####
 
-## Installation ChIPseeker:
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-
-BiocManager::install("ChIPseeker")
-
-
-## Installation annotation pour la souris:
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-
-BiocManager::install("TxDb.Mmusculus.UCSC.mm10.knownGene")
+# via un environnement conda et un fichier de config "config_R.yaml" pour gerer les versions et les packages.
 
 
 ##### Importation des libraries: #####

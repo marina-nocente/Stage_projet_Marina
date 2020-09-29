@@ -4,11 +4,13 @@ channels:
   - bioconda
   - conda-forge
   - defaults
+  - r
 dependencies:
-  - bioconductor-chipseeker
-  - bioconductor-txdb.mmusculus.ucsc.mm10.knowngene
-  - bioconductor-clusterprofiler
-  - r-annotables
+  - bioconda:bioconductor-chipseeker
+  - bioconda:bioconductor-txdb.mmusculus.ucsc.mm10.knowngene
+  - bioconda:bioconductor-clusterprofiler
+  - bioconda:r-annotables
   - bioconductor-org.mm.eg.db
-  - rstudio
-  - r-markdown
+  - conda-forge:r-markdown
+  - conda-forge:r-stringi
+  - conda-forge:libxml2=2.9.9
