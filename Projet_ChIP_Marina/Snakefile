@@ -80,7 +80,7 @@ rule all:
         expand("results/macs2/{sample_wildcard}_peaks.narrowPeak", sample_wildcard = list_ChIP),
         expand("results/macs2/{sample_wildcard}_summits.bed", sample_wildcard = list_ChIP),
         expand("results/macs2/{sample_wildcard}_treat_pileup.bdg", sample_wildcard = list_ChIP),
-        expand("results/bigwig/{sample_wildcard}.bedgraph", sample_wildcard = list_ChIP)
+        expand("results/bigwig/{sample_wildcard}.bw", sample_wildcard = list_ChIP)
 
 
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
@@ -437,9 +437,9 @@ Cette regle permet de convertir mes fichiers bam en bigwig pour visualiser sous 
 
 rule test_deeptools_bamcoverage:
     input:
-        bam = "./results/bowtie2/{sample_wildcard}.bam"
+        bam = "results/picard/deduplicate_{sample_wildcard}.bam"
     output:
-        coverage = protected("./results/bigwig/{sample_wildcard}.bedgraph")
+        coverage = protected("results/bigwig/{sample_wildcard}.bw")
     message:
         "Testing deeptools bamcoverage"
     threads:
