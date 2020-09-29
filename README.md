@@ -20,7 +20,39 @@ Le répertoire "script" contient également lui-même 11 répertoires (un pour c
 Le projet GitHub contient également le fichier "feuille_route.ods" qui répertorie toute les informations connues de mes échantillons, les différentes étapes de l'analyse à faire et leur avancement. La feuille de route a été mise à jour avec le nom des échantillons de la plateforme de séquencage et le nom avec lequel je les ai renommés.
 
 
-# Explication du Snakefile:
+# Creation d'un Snakefile utilisable avec snakemake:
+
+## Installation de Snakemake via le fichier yaml de Thibault (bonnes versions, outils etc...)
+
+```{bash, eval=FALSE}
+conda env create -f ./snakemake_env.yaml
+```
+
+## Quelques mots sur snakemake et un snakefile:
+
+Un workflow Snakemake est défini en spécifiant des règles dans un Snakefile. Les règles décomposent le workflow en petites étapes (par exemple, une règle par outil) en spécifiant comment créer des ensembles de fichiers de sortie à partir d'ensembles de fichiers d'entrée. Snakemake détermine automatiquement les dépendances entre les règles en faisant correspondre les noms de fichiers.
+Le langage Snakemake est basé sur du Python. Une règle Snakemake a un nom (par ex fastp) et un certain nombre de directives (par ex: input, output et shell). Les directives d'entrée et de sortie sont suivies de listes de fichiers qui devraient être utilisés ou créés par la règle. On peut spécifier les paramètres de l'outil utilisé dans la règle (directement ou en utilisant un fichier de config).
+On utilise des wildcards pour avoir des noms génériques de nos fichiers.
+
+Nous allons utiliser des wrappers. Les wrappers snakemake sont une collection de wrappers réutilisables qui permettent d'utiliser rapidement les règles et workflows de snakemake. Les wrappers gèrent de facon autonome les environnements conda, les échantillons, les variables etc...
+
+
+## Utilisation des wrappers
+
+J'utilise les wrappers dont Thibault a rendu disponible le code.
+[GitHub de Thibault pour acceder a ses wrappers](https://github.com/tdayris-perso/snakemake-wrappers)
+[Ex de la doc du wrapper de Picard markduplicates](file:///home/mnocente/snakemake-wrappers/docs/_build/html/wrappers/picard/markduplicates.html)
+
+
+```{bash, eval=FALSE}
+git clone https://github.com/tdayris/snakemake-wrappers.git
+git checkout Unofficial
+cd snakemake-wrappers/docs/_build/html
+firefox index.html
+
+```
+
+# Les differentes etapes de mon Snakefile:
 
 ## Etape 1 : vérification de la qualité des reads séquencés
 
@@ -39,6 +71,7 @@ Dans le fichier de resultat de fastQC, on peut ainsi acceder a differentes rubri
 
 Les differentes rubriques du rapport fastQC aident a prendre des decisions pour le trimming des fichiers fastq.gz.
 
+[doc fastQC](https://dnacore.missouri.edu/PDF/FastQC_Manual.pdf)
 
 ## Etape 2 : trimming des reads
 
@@ -54,12 +87,15 @@ Voici quelques caracteristiques de l'outil fastp (d'apres sa documentation):
 
 On obtient ainsi des reads nettoyes au format fastq.gz et un rapport de ce que fastp a fait au format .html ou .json.
 
+[manuel options fastp](https://manpages.debian.org/testing/fastp/fastp.1.en.html)
+[github fastp](https://github.com/OpenGene/fastp#features)
+
 
 ## Etape 3 : Alignement des reads sur le génome de référence de la souris
 
 ### Indexation du génome mm10
 
-J'ai pris le FASTA du genome de la souris sur GENCODE: "contenu Genome sequence, primary assembly (GRCm38) mm10, region PRI. Nucleotide sequence of the GRCm38 primary genome assemby (chromosomes and scaffolds (suffisant pour ce que l'on veut nous, pas besoin du reste)). The sequence region names are in the same as in the GTF/GFF file".
+J'ai pris le FASTA du genome de la souris sur ENSEMBL: "contenu Genome sequence, primary assembly (GRCm38) mm10, region PRI. Nucleotide sequence of the GRCm38 primary genome assemby (chromosomes and scaffolds (suffisant pour ce que l'on veut nous, pas besoin du reste)). The sequence region names are in the same as in the GTF/GFF file".
 
 J'ai utilisé bowtie2 pour indexé le génome.
 
@@ -78,6 +114,8 @@ Bowtie2 mappe les reads paires sur le genome indexe de la souris mm10.
 
 Le resultat de bowtie2 est des fichiers au format .bam.
 
+[doc bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml)
+
 
 ## Etape 4 : Verification de la qualité de l'alignement
 
@@ -93,6 +131,8 @@ On peut ainsi acceder a ces informations :
 - with itself and mate mapped : nombre de reads apparies où les deux sont mappes.
 - singletons : nombre de reads apparies ou l’un est mappe et pas l’autre.
 
+[doc samtools_flagstat](http://www.htslib.org/doc/samtools-flagstat.html)
+
 
 ## Etape 5 : Tri des fichiers bam:
 
@@ -103,6 +143,9 @@ Ainsi, si deux reads ont les meme coordonnees ils seront ecrits a la suite.
 L'utilisation de certains outils, comme Picard, nécessite que les reads dans les fichiers .bam soient tries par leur coordonnees.
 On obtient donc en sortie des fichiers tries au format .bam.
 
+[doc samtools_sort](http://www.htslib.org/doc/samtools-sort.html)
+
+
 
 ## Etape 6 : Marquage et élimination des reads dupliqués:
 
@@ -112,7 +155,8 @@ Picard Markduplicates va reperer les duplicats dans les fichiers bam et va les m
 Grace a l'option "REMOVE_DUPLICATES=true", les reads dupliqués ne seront pas ecrits dans les fichiers .bam de sortie, ils sont directement éliminés.
 Picard fournit egalement un fichier "metrics" qui indique le nombre de reads dupliques.
 
-__https://gatk.broadinstitute.org/hc/en-us/articles/360037225972-MarkDuplicates-Picard-
+[doc Picard markDuplicates](https://gatk.broadinstitute.org/hc/en-us/articles/360037225972-MarkDuplicates-Picard-)
+[gitHub Picard](https://broadinstitute.github.io/picard/)
 
 
 ## Etape 7 : Vérification du fichier de sortie de Picard
@@ -120,12 +164,16 @@ __https://gatk.broadinstitute.org/hc/en-us/articles/360037225972-MarkDuplicates-
 On vérifie à l'aide de samtools flagstat que les reads dupliqués n'ont pas été écrits dans le bam de sortie.
 On veut uniquement des reads qui sont uniques et "bien mappés" (flag = 99, 147, 83, 163).
 
+[doc samtools_flagstat](http://www.htslib.org/doc/samtools-flagstat.html)
+
 
 ## Etape 8 : Création d'un bam indexé pour la visualisation sous IGV des reads mappés dédupliqués.
 
 samtools index prend en entrée des fichiers .bam où les reads ont été triés et dédupliqués.
 
 samtools index permet d'indexer des fichiers .bam et de fournir des fichiers .bam.bai afin de visualiser les reads alignes, tries et dedupliques sous IGV.
+
+[doc samtools_index](http://www.htslib.org/doc/samtools-index.html)
 
 
 ## Etape 9 : Peak-calling
@@ -145,9 +193,30 @@ J'ai utilisé les options suivantes :
 
 Le fichier "peaks.narrowPeak"  est un format BED 6 + 4 (6eres colonnes d'un fichier BED standard (chromosome, coordonnees start, coordonnees end, name, score, brin) avec 4 champs supplementaires (signalValue (Measurement of overall enrichment for the region), pValue, qValue et peak).
 
+[doc macs2 callpeak](https://hbctraining.github.io/Intro-to-ChIPseq/lessons/05_peak_calling_macs.html)
+[autre doc macs2 callpeak](https://github.com/macs3-project/MACS)
+
+
+## Etape 10 : Annotation des peaks
+
+Les peaks sont annotés avec ChIPseeker qui prend en entrée des peaks et des fichiers d'annotation (ex: TxDb.Mmusculus.UCSC.mm10.knownGene ou org.Mm.eg.db). ChIPseeker est un package R (il faut écrire un script R que l'on pourra inclure dans le Snakefile).
+On va pouvoir obtenir des listes de peaks avec leur annotation, des graphes pour voir au niveau de quelles régions tombent les peaks annotés et on va pourvoir faire des analyses d'enrichissement fonctionnel.
+Les analyses d'enrichissement fonctionnel pourront se faire sur un seul facteur ou en intégrant mes différents facteurs.
+On pourra utiliser les bases de données GO (gènes qui ont des choses en communs) ou KEG (réaction et voies de signalisation liés entre eux).
+
+[github de chipseeker](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/sessionV/lessons/12_annotation_functional_analysis.html)
+[autre doc de chipseeker](http://bioconductor.org/packages/devel/bioc/vignettes/ChIPseeker/inst/doc/ChIPseeker.html#abstract)
 
 
 # Lancement du snakefile pour test :
+
+## Permet de tester le Snakefile
+```{bash, eval=FALSE}
+
+conda activate snakemake
+snakemake --configfile config.yaml --snakefile Snakefile -j5 --printshellcmd --use-conda --reason --wrapper-prefix https://raw.githubusercontent.com/tdayris/snakemake-wrappers/ --dryrun
+
+```
 
 ## Permet d'afficher une image du pipeline
 ```{bash, eval=FALSE}
@@ -155,8 +224,106 @@ snakemake --configfile config.yaml --snakefile Snakefile -j1 --printshellcmd --u
 
 eog test.png
 
-snakemake --configfile config.yaml --snakefile Snakefile -j5 --printshellcmd --use-conda --reason --wrapper-prefix https://raw.githubusercontent.com/tdayris/snakemake-wrappers/
-
 ```
 
 
+# Modification du Snakefile pour le lancer sur le cluster de l'IGR:
+
+Pour chacune de mes règles du Snakefile, il faut définir la mémoire, le temps d'exécution et le nombre de threads.
+
+## Fonction lambda
+
+En python (existe aussi dans d'autres languages), une fonction lambda est une très petite fonction, qui fait quelque chose d'assez simple et qui est peu utilisée.
+Cette fonction lambda n'a pas de nom, mais elle a des arguments.
+
+Ex :
+lambda wildcare attempt : 1024 * 10
+avec :
+lamda : fonction lambda
+wildcare : argument 1 (si on veut faire un traitement sur un fichier en particulier par ex)
+attempt : argument 2 (si une regle échoue, on peut la relancer en réservant un peu plus de resources)
+: = retourne
+1024 * 10 : valeur de l'argument attempt
+
+
+
+## Le paramètre "resources" dans un Snakefile:
+Quand on veut lancer un Snakefile sur le cluster via snakemake, il est essentiel de lui préciser la mémoire et le temps d'exécution dont chaque outil a besoin dans le paramètre "resources" avec mem_mb et time_min.
+Pour cela, on utilise des fonctions lambda qui précise la mémoire et le temps d'exécution pour chaque rule. 
+Par exemple, pour la règle de Bowtie2:
+resources:
+        mem_mb = lambda wildcards, attempt: min((1024 * 8) + (2 * attempt), 10 * 1024),
+        time_min = lambda wildcards, attempt: 45 + (15 * attempt)
+
+Bowtie2 a besoin de 8/10gb et 45/60min par rapport à la taille de mes fichiers.
+min((1024 * 8) + (2 * attempt), 10 * 1024), mémoire nécessaire minimale d'env 8 Gb + ajout de 2 Gb à chaque fois qu'il retente et la mémoire max est 10 Gb.
+Pour le temps minimal, on met 45 min + on ajoute 15 min à chaque nouvel essai si le précédent a échoué.
+
+
+## Le paramètre "threads" dans un Snakefile:
+Quand on veut lancer un Snakefile sur le cluster via snakemake, il est également essentiel de lui préciser le nombre de threads pour chaque rule. Ainsi, il ne faut pas hésiter à mettre 20 threads pour Bowtie2 ou fastp. On met un seul thread pour fastQC car il prend les fichiers un par un.
+Pour samtools_sort, on met 10 threads car on s'attend à avoir une mémoire de 10 Gb et donc on donne 1 Gb par thread.
+Quand l'outil n'est pas multi-threadés (à priori comme Picard et MACS2), il faut quand même préciser threads =1 pour le cluster.
+
+
+
+# Lancement d'un Snakefile sur le cluster:
+
+## Lancement d'un Snakefile sur le cluster pour un test (sans exécution):
+```{bash, eval=FALSE}
+snakemake --profile slurm -n
+```
+
+## Lancement d'un Snakefile sur le cluster avec exécution:
+```{bash, eval=FALSE}
+snakemake --profile slurm
+
+nohup snakemake --profile slurm --rerun-incomplete > nohup.ok.log 2> nohup.errors.log &
+```
+
+[option --profile de Snakemake](https://snakemake.readthedocs.io/en/stable/executing/cli.html?highlight=--profile)
+
+l'option --profile slurm de snakemake permet de lancer le Snakefile grace à un fichier de configuration "slurm" dans lequel est écrit tous les environnements et options que l'on veut pour snakemake.
+Ce fichier est ici : "~/.config/snakemake/slurm/config.yaml"
+Il contient :
+
+restart-times: 3 # snakemake va refaire jusqu'à 3 essais si il y a eu un échec
+jobscript: "slurm-jobscript.sh"
+cluster: "slurm-submit.py" 
+cluster-status: "slurm-status.py"
+max-jobs-per-second: 1 # maximum 1 job par seconde (pour qu'on ait le temps de la voir apparaitre à l'écran)
+max-status-checks-per-second: 10
+local-cores: 1
+jobs: 10
+keep-going: true
+reason: true 
+printshellcmds: true
+jobname: "{name}.{jobid}.snakejob.sh"
+conda-prefix: /home/m_nocente@intra.igr.fr/snakemake/conda # utilise mon conda
+wrapper-prefix: https://raw.githubusercontent.com/tdayris/snakemake-wrappers/ # utilise les wrappers de Thibault
+use-conda: true # utilise conda
+~                 
+
+Il a été crée par Thibault et provient de son GitHub :
+[GitHUb Thibault pour slurm](https://github.com/tdayris-perso/slurm)
+
+
+nohup permet de détacher la commande du parent (on veut que le processus continu comme un orphelin).
+& (esperluette) permet de reprendre la main, c'est-à-dire que la commande est mise en arrière plan.
+--rerun-incomplete permet de dire à snakemake que l'on veut qu'il recommence le job qu'il a commencé et pas fini (car on l'a arrêté).
+
+
+
+## Donner des droits:
+Suite à un problème de compte (je n'ai pas le droit de soumettre des jobs sur le cluster pour l'instant), j'ai donné à Thibault (et à tout le monde) des droits sur mon home afin qu'il puisse lancer mon Snakefile pour ne pas perdre de temps.
+
+```{bash, eval=FALSE}
+chmod -R 770 $PWD
+```
+
+## Protection de mes fichiers output:
+Afin d'éviter qu'une personne travaillant sur le cluster puisse modifier mes fichiers output, je les ai protéger en écrivant protected() autour de chaque output.
+Par exemple : 
+trimmed=protected(["results/fastp/cleaned_filtered_{sample_wildcard}_1.fastq.gz", "results/fastp/cleaned_filtered_{sample_wildcard}_2.fastq.gz"])
+
+[option --protected de Snakemake](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html?highlight=protected#protected-and-temporary-files)
