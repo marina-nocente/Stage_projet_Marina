@@ -256,7 +256,7 @@ rule bowtie2_mapping:
         op.join(config["outputdir"], "bowtie2", "logs", "{sample_wildcard}.log")
     resources:
         mem_mb = lambda wildcards, attempt: min((1024 * 8) + (2 * attempt), 10 * 1024),
-        time_min = lambda wildcards, attempt: 45 + (15 * attempt)
+        time_min = lambda wildcards, attempt: 140 + (120 * attempt)
     params:
         index="{}/mouse_index/mouse_genome_mm10".format(config["outputdir"]), # prefix of reference genome index (built with bowtie2-build)
         extra="" #  "--align-paired-reads"
@@ -358,7 +358,7 @@ rule samtools_sort:
         mem_mb = 1024 * 10,
         time_min = lambda wildcards, attempt: 45 + (15 * attempt)
     params:
-        " " # Approximately the maximum required memory per thread. To prevent sort from creating a huge number of temporary files, it enforces a minimum value of 1M for this setting.
+        " -m 756M " # Approximately the maximum required memory per thread. To prevent sort from creating a huge number of temporary files, it enforces a minimum value of 1M for this setting.
     threads:  # Samtools takes additional threads through its option -@. One thread for samtools. Other threads are *additional* threads passed to the argument -@.
         10     # This value - 1 will be sent to -@.
     wrapper:
@@ -386,7 +386,7 @@ rule mark_duplicates:
         time_min = lambda wildcards, attempt: 45 + (15 * attempt)
     threads: 1
     params:
-        "REMOVE_DUPLICATES=true VALIDATION_STRINGENCY=SILENT " # If true do not write duplicates to the output file instead of writing them with appropriate flags set.
+        "-Djava.io.tmpdir=javatmp_{sample_wildcard} TMP_DIR=picardtmp_{sample_wildcard} REMOVE_DUPLICATES=true VALIDATION_STRINGENCY=SILENT " # If true do not write duplicates to the output file instead of writing them with appropriate flags set.
     wrapper:
         "Unofficial/bio/picard/markduplicates"
 
