@@ -22,9 +22,9 @@ library(org.Mm.eg.db) # Genome wide annotation for Mouse
 ##### Loading des data #####
 # As input we need to provide the names of our BED files in a list format.
 
-samplefiles <- list.files("results/macs2/", pattern= ".bed", full.names=T)
+samplefiles <- list.files("/home/mnocente/Bureau/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2_peaks", pattern= ".narrowPeak", full.names=T)
 samplefiles <- as.list(samplefiles)
-names(samplefiles) <- c("Oct4", "TBP") #### Mettre les noms dans le bon ordre !!!! ####
+names(samplefiles) <- c("CTCF", "Oct4") #### Mettre les noms dans le bon ordre !!!! ####
 
 
 ##### Assign annotation db #####
@@ -48,10 +48,10 @@ peakAnnoList # annotation information is stored in the peakAnnoList
 
 # Pie chart of genomic region annotation
 plotAnnoPie(peakAnnoList[["Oct4"]])
-plotAnnoPie(peakAnnoList[["TBP"]])
-plotAnnoPie(peakAnnoList[["Pol2"]])
+#plotAnnoPie(peakAnnoList[["TBP"]])
+#plotAnnoPie(peakAnnoList[["Pol2"]])
 plotAnnoPie(peakAnnoList[["CTCF"]])
-plotAnnoPie(peakAnnoList[["Chd8"]])
+#plotAnnoPie(peakAnnoList[["Chd8"]])
 
 # Barchart (multiple samples for comparison)
 plotAnnoBar(peakAnnoList)
@@ -64,7 +64,7 @@ plotDistToTSS(peakAnnoList, title="Distribution of transcription factor-binding 
 
 ### Get annotation data frame
 Oct4_annot <- as.data.frame(peakAnnoList[["Oct4"]]@anno)
-TBP_annot <- as.data.frame(peakAnnoList[["TBP"]]@anno)
+CTCF_annot <- as.data.frame(peakAnnoList[["CTCF"]]@anno)
 
 # Dans ces dataframes, on doit voir des colonnes correspondant au fichier BED d'entrée et des colonnes supplémentaires contenant le ou les gènes les plus proches, la distance entre le pic et le TSS du gène le plus proche, la région génomique du pic et d'autres informations. 
 # Ordre de priorite : Promoter, 5’ UTR, 3’ UTR, Exon, Intron, Downstream (defined as the downstream of gene end), Intergenic.
