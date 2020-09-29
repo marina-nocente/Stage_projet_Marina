@@ -342,7 +342,7 @@ rule mark_duplicates:
     log:
         "results/picard/logs/deduplicate_{sample_wildcard}.log"
     resources:
-        mem_mb = lambda wildcards, attempt: min((1024 * 5) + (3 * attempt), 10 * 1024),
+        mem_mb = lambda wildcards, attempt: min((1024 * 7) + (3 * attempt), 10 * 1024),
         time_min = lambda wildcards, attempt: 45 + (15 * attempt)
     threads: 1
     params:
@@ -428,3 +428,34 @@ rule callpeak:
         # --nomodel : While on, MACS will bypass building the shifting model.
     wrapper:
         "Unofficial/bio/macs2/callpeak"
+
+
+"""
+Cette regle permet de convertir mes fichiers bam en bigwig pour visualiser sous IGV
+"""
+
+rule test_deeptools_bamcoverage:
+    input:
+        bam = "./results/bowtie2/{sample_wildcard}.bam"
+    output:
+        coverage = protected("./results/bigwig/{sample_wildcard}.bedgraph")
+    message:
+        "Testing deeptools bamcoverage"
+    threads:
+        1
+    resources:
+        mem_mb = (
+            lambda wildcards, attempt: min(attempt * 1024, 10240)
+        ),
+        time_min = (
+            lambda wildcards, attempt: min(attempt * 20, 200)
+        )
+    log:
+        "./results/bigwig/logs/{sample_wildcard}_test_deeptools_bamcoverage.log"
+    wrapper:
+        "Unofficial/bio/deeptools/bamcoverage"
+
+
+"""
+Cette regle permet de lancer le script R qui execute ChIPseeker
+"""

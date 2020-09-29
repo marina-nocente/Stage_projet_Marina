@@ -1,0 +1,14 @@
+---
+name: config_R
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconductor-chipseeker
+  - bioconductor-txdb.mmusculus.ucsc.mm10.knowngene
+  - bioconductor-clusterprofiler
+  - r-annotables
+  - bioconductor-org.mm.eg.db
+  - rstudio
+  - r-markdown

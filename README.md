@@ -279,6 +279,7 @@ snakemake --profile slurm -n
 snakemake --profile slurm
 
 nohup snakemake --profile slurm --rerun-incomplete > nohup.ok.log 2> nohup.errors.log &
+nohup snakemake --profile slurm --rerun-incomplete > nohup.complete.log 2>&1 &
 ```
 
 [option --profile de Snakemake](https://snakemake.readthedocs.io/en/stable/executing/cli.html?highlight=--profile)
@@ -327,3 +328,11 @@ Par exemple :
 trimmed=protected(["results/fastp/cleaned_filtered_{sample_wildcard}_1.fastq.gz", "results/fastp/cleaned_filtered_{sample_wildcard}_2.fastq.gz"])
 
 [option --protected de Snakemake](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html?highlight=protected#protected-and-temporary-files)
+
+
+## Repertoire de travail sur le cluster
+
+Il faut travailler dans :
+/mnt/beegfs/userdata/m_nocente/
+
+Réinstallation de conda, puis de snakemake et je relance mon Snakefile.
