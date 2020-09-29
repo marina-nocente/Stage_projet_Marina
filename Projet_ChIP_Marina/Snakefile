@@ -478,7 +478,5 @@ rule suppression_contig:
         time_min = (
             lambda wildcards, attempt: min(attempt * 20, 200)
         )
-    log:
-        "results/macs2/just_chr_{sample_wildcard}_peaks.narrowPeak"
     shell:
         'grep "chr" {input} > {output}'
