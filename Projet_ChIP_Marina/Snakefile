@@ -7,6 +7,8 @@ et lister les echantillons.
 
 import os.path as op # permet de faciliter l acces aux chemins de fichier etc
 import sys # permet des interactions avec le systeme
+import itertools
+
 
 # pour appeler le fichier config
 configfile: "./config.yaml"
@@ -45,6 +47,15 @@ for ech in list_sample:
 sample_wildcard_constraints = "|".join(list_ChIP)
 #print(sample_wildcard_constraints)
 
+
+
+
+
+
+#for place, element in enumerate(list_ChIP):
+#    if place+1 <= len(list_ChIP):
+#         print(list_ChIP[0:place] + list_ChIP[place+1:], element)
+#list(itertools.permutations(list_ChIP), 2)
 
 ## On ne fait pas confiance aux ordis! On precise le nom des fichiers
 wildcard_constraints:
@@ -480,3 +491,35 @@ rule suppression_contig:
         )
     shell:
         'grep "chr" {input} > {output}'
+
+
+
+"""
+Cette regle permet d'executer mon script R pour l'annotation des peaks via ChIPseker
+"""
+rule script_r_chipseeker:
+    input:
+        "results/macs2/just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak",
+        "results/macs2/just_chr_ChIPseq_Chd8_rep2_peaks.narrowPeak",
+        "results/macs2/just_chr_ChIPseq_CTCF_peaks.narrowPeak",
+        "results/macs2/just_chr_ChIPseq_TBP_rep1_peaks.narrowPeak",
+        "results/macs2/just_chr_ChIPseq_TBP_rep2_peaks.narrowPeak",
+        "results/macs2/just_chr_ChIPseq_Oct4_rep1_peaks.narrowPeak",
+        "results/macs2/just_chr_ChIPseq_Oct4_rep2_peaks.narrowPeak",
+        "results/macs2/just_chr_ChIPseq_Pol2_rep1_peaks.narrowPeak",
+        "results/macs2/just_chr_ChIPseq_Pol2_rep2_peaks.narrowPeak"
+    output:
+        "results/chipseeker/Barchart_comparison_sample_.png",
+        "results/chipseeker/Distribution_of_TF-binding_loci_relative_to_TSS.png",
+        "Oct4_annotation.txt",
+        "CTCF_annotation.txt",
+        "clusterProfiler_Oct4.csv",
+        "clusterProfiler_CTCF.csv",
+        "dotplotfunctional_enrichment_Oct4.png",
+        "dotplotfunctional_enrichment_CTCF.png",
+        "KEGG_Pathway_Enrichment_Analysis.png"
+    params:
+        samples="{sample_wildcard}"
+        ref=
+    script:
+        "scripts/chipseeker.R"
