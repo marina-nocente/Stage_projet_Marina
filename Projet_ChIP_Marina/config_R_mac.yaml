@@ -1,0 +1,22 @@
+---
+name: config_R
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+  - r
+dependencies:
+  - bioconda:bioconductor-chipseeker
+  - bioconda:bioconductor-txdb.mmusculus.ucsc.mm10.knowngene
+  - bioconda:bioconductor-clusterprofiler
+  - bioconda:r-annotables
+  - bioconductor-org.mm.eg.db
+  - conda-forge:r-markdown
+  - conda-forge:r-stringi
+  - conda-forge:libxml2=2.9.9
+  - conda-forge:r-dplyr
+  - conda-forge:r-rcpp
+  - bioconda:bioconductor-s4vectors
+  - bioconda:bioconductor-biobase
+  - conda-forge:r-bitops
+  - conda-forge:r-rlang

@@ -92,8 +92,16 @@ rule all:
         expand("results/macs2/{sample_wildcard}_summits.bed", sample_wildcard = list_ChIP),
         expand("results/macs2/{sample_wildcard}_treat_pileup.bdg", sample_wildcard = list_ChIP),
         expand("results/bigwig/{sample_wildcard}.bw", sample_wildcard = list_ChIP),
-        expand("results/macs2/just_chr_{sample_wildcard}_peaks.narrowPeak", sample_wildcard = list_ChIP)
-
+        expand("results/macs2/just_chr_{sample_wildcard}_peaks.narrowPeak", sample_wildcard = list_ChIP),
+        expand("results/chipseeker/Barchart_comparison_sample_.png"),
+        expand("results/chipseeker/Distribution_of_TF-binding_loci_relative_to_TSS.png"),
+        expand("results/chipseeker/clusterProfiler_Oct4.csv"),
+        expand("results/chipseeker/dotplotfunctional_enrichment_Oct4.png"),
+        expand("results/chipseeker/dotplotfunctional_enrichment_CTCF.png"),
+        expand("results/chipseeker/dotplotfunctional_enrichment_TBP.png"),
+        expand("results/chipseeker/dotplotfunctional_enrichment_Pol2.png"),
+        expand("results/chipseeker/dotplotfunctional_enrichment_Chd8.png"),
+        expand("results/chipseeker/KEGG_Pathway_Enrichment_Analysis.png")
 
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.html"), sample_wildcard=Fastq_name_liste),
 #       expand(op.join(config["outputdir"], "QC", "fastqScreen1", "{sample_wildcard}_screen.txt"), sample_wildcard=Fastq_name_liste),
@@ -511,15 +519,21 @@ rule script_r_chipseeker:
     output:
         "results/chipseeker/Barchart_comparison_sample_.png",
         "results/chipseeker/Distribution_of_TF-binding_loci_relative_to_TSS.png",
-        "Oct4_annotation.txt",
-        "CTCF_annotation.txt",
-        "clusterProfiler_Oct4.csv",
-        "clusterProfiler_CTCF.csv",
-        "dotplotfunctional_enrichment_Oct4.png",
-        "dotplotfunctional_enrichment_CTCF.png",
-        "KEGG_Pathway_Enrichment_Analysis.png"
-    params:
-        samples="{sample_wildcard}"
-        ref=
+        "results/chipseeker/Oct4_annotation.txt",
+        "results/chipseeker/Pol2_annotation.txt",
+        "results/chipseeker/CTCF_annotation.txt",
+        "results/chipseeker/TBP_annotation.txt",
+        "results/chipseeker/Chd8_annotation.txt",
+        "results/chipseeker/clusterProfiler_Oct4.csv",
+        "results/chipseeker/clusterProfiler_CTCF.csv",
+        "results/chipseeker/clusterProfiler_TBP.csv",
+        "results/chipseeker/clusterProfiler_Pol2.csv",
+        "results/chipseeker/clusterProfiler_Chd8.csv",
+        "results/chipseeker/dotplotfunctional_enrichment_Oct4.png",
+        "results/chipseeker/dotplotfunctional_enrichment_CTCF.png",
+        "results/chipseeker/dotplotfunctional_enrichment_TBP.png",
+        "results/chipseeker/dotplotfunctional_enrichment_Pol2.png",
+        "results/chipseeker/dotplotfunctional_enrichment_Chd8.png",
+        "results/chipseeker/KEGG_Pathway_Enrichment_Analysis.png"
     script:
         "scripts/chipseeker.R"

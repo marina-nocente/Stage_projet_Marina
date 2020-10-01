@@ -23,7 +23,7 @@ print("les libraries ont bien été chargées")
 
 ##### Loading des data #####
 # As input we need to provide the names of our BED files in a list format.
-samplefiles <- list.files("./results/macs2_peaks", pattern= ".narrowPeak",full.names = T)
+samplefiles <- list.files("/Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2_peaks", pattern= ".narrowPeak",full.names = T)
 samplefiles <- as.list(samplefiles)
 names(samplefiles) <- c("Chd8_rep1", "Chd8_rep2", "CTCF", "Oct4_rep1", "Oct4_rep2", "Pol2_rep1", "Pol2_rep2", "TBP_rep1", "TBP_rep2")
 
