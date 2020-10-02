@@ -4,7 +4,7 @@ logs
 results
 
 .snakemake
-
+.Rhistory
 
 Projet_ChIP_Marina/nohup.complete.log
 Projet_ChIP_Marina/nohup.log
