@@ -23,7 +23,7 @@ print("les libraries ont bien été chargées")
 
 ##### Loading des data #####
 # As input we need to provide the names of our BED files in a list format.
-samplefiles <- list.files("/Users/mn242062/Desktop/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2_peaks", pattern= ".narrowPeak",full.names = T)
+samplefiles <- list.files("/shared/home/mnocente/macs2", pattern= ".narrowPeak",full.names = T)
 samplefiles <- as.list(samplefiles)
 names(samplefiles) <- c("Chd8_rep1", "Chd8_rep2", "CTCF", "Oct4_rep1", "Oct4_rep2", "Pol2_rep1", "Pol2_rep2", "TBP_rep1", "TBP_rep2")
 
@@ -119,8 +119,9 @@ nb_peaks_Oct4_rep2_NON_distal
 
 # On ajoute les réplicats:
 nb_peaks_Oct4_distal <- nb_peaks_Oct4_rep1_distal + nb_peaks_Oct4_rep2_distal
-nb_peaks_Oct4_NON_distal <- nb_peaks_Oct4_rep1_distal + nb_peaks_Oct4_rep2_NON_distal
-
+nb_peaks_Oct4_distal
+nb_peaks_Oct4_NON_distal <- nb_peaks_Oct4_rep1_NON_distal + nb_peaks_Oct4_rep2_NON_distal
+nb_peaks_Oct4_NON_distal
 
 ## CTCF
 CTCF_avant2000 <- subset(CTCF_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
@@ -175,7 +176,9 @@ nb_peaks_TBP_rep2_NON_distal
 
 # On ajoute les réplicats:
 nb_peaks_TBP_distal <- nb_peaks_TBP_rep1_distal + nb_peaks_TBP_rep2_distal
-nb_peaks_TBP_NON_distal <- nb_peaks_TBP_rep1_distal + nb_peaks_TBP_rep2_NON_distal
+nb_peaks_TBP_distal
+nb_peaks_TBP_NON_distal <- nb_peaks_TBP_rep1_NON_distal + nb_peaks_TBP_rep2_NON_distal
+nb_peaks_TBP_NON_distal
 
 
 ## Pol2 rep1
@@ -214,7 +217,9 @@ nb_peaks_Pol2_rep2_NON_distal
 
 # On ajoute les réplicats:
 nb_peaks_Pol2_distal <- nb_peaks_Pol2_rep1_distal + nb_peaks_Pol2_rep2_distal
+nb_peaks_Pol2_distal
 nb_peaks_Pol2_NON_distal <- nb_peaks_Pol2_rep1_NON_distal + nb_peaks_Pol2_rep2_NON_distal
+nb_peaks_Pol2_NON_distal
 
 
 ## Chd8 rep1
@@ -253,7 +258,10 @@ nb_peaks_Chd8_rep2_NON_distal
 
 # On ajoute les réplicats:
 nb_peaks_Chd8_distal <- nb_peaks_Chd8_rep1_distal + nb_peaks_Chd8_rep2_distal
-nb_peaks_Chd8_NON_distal <- nb_peaks_Chd8_rep1_distal + nb_peaks_Chd8_rep2_NON_distal
+nb_peaks_Chd8_distal
+nb_peaks_Chd8_NON_distal <- nb_peaks_Chd8_rep1_NON_distal + nb_peaks_Chd8_rep2_NON_distal
+nb_peaks_Chd8_NON_distal
+
 
 ## Table de contingence pour Oct4 pour les elements distaux:
 peaks_distaux_autres <- nb_peaks_CTCF_distal + nb_peaks_Chd8_distal + nb_peaks_TBP_distal + nb_peaks_Pol2_distal
@@ -343,43 +351,102 @@ contingence_table_Pol2
 rownames(contingence_table_Pol2) <- c("Pol2", "autre")
 contingence_table_Pol2
 
-### reste Chd8
+
+## Table de contingence pour Chd8 pour les elements distaux:
+peaks_distaux_autres <- nb_peaks_Oct4_distal + nb_peaks_Pol2_distal + nb_peaks_CTCF_distal + nb_peaks_TBP_distal
+peaks_distaux_autres
+peaks_distaux_Chd8_vs_autres <-c(nb_peaks_Chd8_distal, peaks_distaux_autres)
+peaks_distaux_Chd8_vs_autres
+
+nb_peaks_NON_distal_autre <- nb_peaks_Oct4_NON_distal + nb_peaks_Pol2_NON_distal + nb_peaks_CTCF_NON_distal + nb_peaks_TBP_NON_distal
+nb_peaks_NON_distal_autre
+peaks_NON_distaux_Chd8_vs_autres <-c(nb_peaks_Chd8_NON_distal, nb_peaks_NON_distal_autre)
+peaks_NON_distaux_Chd8_vs_autres
+
+
+contingence_table_Chd8 <- data.frame(peaks_distaux_Chd8_vs_autres, peaks_NON_distaux_Chd8_vs_autres, stringsAsFactors = FALSE)
+contingence_table_Chd8
+
+colnames(contingence_table_Chd8) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
+contingence_table_Chd8
+
+rownames(contingence_table_Chd8) <- c("Chd8", "autre")
+contingence_table_Chd8
 
 
 ## Test de fisher sur la table de contingence de Oct4
-fisher.test(x=contingence_table_Oct4, # table de contingence
-            y = NULL, # a factor object; ignored if x is a matrix.
-            hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-            control = list(), # a list with named components for low level algorithm control.
-            or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-            alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-            conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-            conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-            B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
+testF_Oct4 <- fisher.test(x=contingence_table_Oct4, # table de contingence
+                          y = NULL, # a factor object; ignored if x is a matrix.
+                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
+                          control = list(), # a list with named components for low level algorithm control.
+                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
+                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
+                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
+                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
+                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
 
 
 
-fisher.test(x=contingence_table_CTCF, # table de contingence
-            y = NULL, # a factor object; ignored if x is a matrix.
-            hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-            control = list(), # a list with named components for low level algorithm control.
-            or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-            alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-            conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-            conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-            B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
+testF_CTCF <- fisher.test(x=contingence_table_CTCF, # table de contingence
+                          y = NULL, # a factor object; ignored if x is a matrix.
+                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
+                          control = list(), # a list with named components for low level algorithm control.
+                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
+                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
+                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
+                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
+                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
 
 
-fisher.test(x=contingence_table_TBP, # table de contingence
-            y = NULL, # a factor object; ignored if x is a matrix.
-            hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-            control = list(), # a list with named components for low level algorithm control.
-            or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-            alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-            conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-            conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-            B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
+testF_TBP <- fisher.test(x=contingence_table_TBP, # table de contingence
+                         y = NULL, # a factor object; ignored if x is a matrix.
+                         hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
+                         control = list(), # a list with named components for low level algorithm control.
+                         or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
+                         alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
+                         conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
+                         conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
+                         B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
 
+
+testF_Pol2 <- fisher.test(x=contingence_table_Pol2, # table de contingence
+                          y = NULL, # a factor object; ignored if x is a matrix.
+                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
+                          control = list(), # a list with named components for low level algorithm control.
+                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
+                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
+                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
+                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
+                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
+
+
+testF_Chd8 <- fisher.test(x=contingence_table_Chd8, # table de contingence
+                          y = NULL, # a factor object; ignored if x is a matrix.
+                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
+                          control = list(), # a list with named components for low level algorithm control.
+                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
+                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
+                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
+                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
+                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
+
+
+testF_Chd8
+testF_Oct4
+testF_TBP
+testF_Pol2
+testF_CTCF
+
+
+#######################################################
+# Région proximale : [-400 ; +100]
+#######################################################
+
+
+### Creation de la table de contingence pour les éléments proxiamux du TSS:
+## Oct4 rep1
+Oct4_rep1_avant400 <- subset(Oct4_rep1_annot, distanceToTSS >= -400) # on garde les peaks avant -400 pb du TSS
+Oct4_rep1_avant100 <- subset(Oct4_rep1_avant400, distanceToTSS <= 100) # on garde les peaks apres + 100 pb du TSS
 
 
 

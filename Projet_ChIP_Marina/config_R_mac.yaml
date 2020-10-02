@@ -1,5 +1,5 @@
 ---
-name: config_R
+name: config_R_mac
 channels:
   - bioconda
   - conda-forge
