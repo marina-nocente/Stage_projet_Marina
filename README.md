@@ -336,3 +336,26 @@ Il faut travailler dans :
 /mnt/beegfs/userdata/m_nocente/
 
 Réinstallation de conda, puis de snakemake et je relance mon Snakefile.
+
+
+
+
+# On merge les réplicats des fichiers de peaks avec HOMER mergePeaks
+
+
+srun /mnt/beegfs/userdata/m_diop/for_homer/bin/mergePeaks -d 100 just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak just_chr_ChIPseq_Chd8_rep2_peaks.narrowPeak -venn "merge_Chd8_peaks_venn" -prefix merge
+
+## On supprime la ligne commencant par # des fichiers de peaks produits par HOMER mergePeaks
+grep "#" -v merge_just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak_just_chr_ChIPseq_Chd8_rep2_peaks.narrowPeak > merge_modif_Chd8_peaks.narrowPeak
+
+## On garde que les colonnes "chr", "start", "end".
+cut -f 2-4 merge_modif_Chd8_peaks.narrowPeak > merge_final_Chd8_peaks.narrowPeak
+
+## Mieux ecrit:
+
+
+
+
+
+
+
