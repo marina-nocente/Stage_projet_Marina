@@ -352,10 +352,55 @@ grep "#" -v merge_just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak_just_chr_ChIPseq_C
 cut -f 2-4 merge_modif_Chd8_peaks.narrowPeak > merge_final_Chd8_peaks.narrowPeak
 
 ## Mieux ecrit:
+grep "#" -v merge_just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak_just_chr_ChIPseq_Chd8_rep2_peaks.narrowPeak | cut -f 2-4 > merge_final_Chd8_peaks.narrowPeak
 
 
 
+# On compte le nombre de base sous les peaks pour chaque facteur
+awk '{SUM += $3-$2} END {print SUM}' merge_final_TBP_peaks.narrowPeak 
+
+Le nombre de bases sous TOUS les peaks pour chaque facteur:
+TBP : 73495 pb
+Pol2 : 942432 pb
+Oct4 : 3469030 pb
+Chd8 : 1423805 pb
+CTCF : 19756243 pb
 
 
 
+# Chercher les peaks communs à CTCF et Oct4:
+srun /mnt/beegfs/userdata/m_diop/for_homer/bin/mergePeaks -d 100 merge_just_chr_ChIPseq_Oct4_rep1_peaks.narrowPeak_just_chr_ChIPseq_Oct4_rep2_peaks.narrowPeak just_chr_ChIPseq_CTCF_peaks.narrowPeak -venn "merge_Oct4_CTCF_peaks_venn" -prefix merge
 
+On obtient 3 listes :
+- une liste contenant que les peaks communs à CTCF et aux 2 réplicats d'Oct4 : merge_merge_just_chr_ChIPseq_Oct4_rep1_peaks.narrowPeak_just_chr_ChIPseq_Oct4_rep2_peaks.narrowPeak_just_chr_ChIPseq_CTCF_peaks.narrowPeak
+- une liste ne contenant que les peaks présents dans CTCF : merge_just_chr_ChIPseq_CTCF_peaks.narrowPeak
+- une liste ne contenant que les peaks présents dans Oct4 : merge_merge_just_chr_ChIPseq_Oct4_rep1_peaks.narrowPeak_just_chr_ChIPseq_Oct4_rep2_peaks.narrowPeak
+
+
+
+# Récupérer le fichier GTF de mm10, garder uniquement les "start_codon", puis les colonnes chr, start, end puis soustraire -2000 à la colonne start et ajouter + 2000 à la colonne end.
+
+grep "start_codon" hgTables.gtf > only_start_codon_hgTables.gtf
+
+cut -f 1,4,5 only_start_codon_hgTables.gtf > good_columns_only_start_codon_hgTables.gtf
+
+awk '{print $1"\t"$2-2000"\t"$3+2000}' good_columns_only_start_codon_hgTables.gtf > coordonnees_good_columns_only_start_codon_hgTables.bed
+
+Je vérifie sur IGV en important mon fichier .bed final et le gtf du début (comparable à ce qu'on a dans RefSeq avec des transcrits en plus).
+
+
+# Annotation avec HOMER et stats
+
+srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl merge_just_chr_ChIPseq_TBP_rep1_peaks.narrowPeak_just_chr_ChIPseq_TBP_rep2_peaks.narrowPeak mm10 -annStats stats_TBP_annot_HOMER > annotated_peaks_HOMER_TBP_merge.txt
+
+srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl merge_just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak_just_chr_ChIPseq_Chd8_rep2_peaks.narrowPeak mm10 -annStats stats_Chd8_annot_HOMER > ./annotated_peaks_HOMER/annotated_peaks_HOMER_Chd8_merge.txt
+
+
+
+Dans le fichier de statistiques, on a accès à différentes stats pour les différents elements annotes: 
+- log2Ratio : enrichissement (si + enrichissement positif, si - enrichissement negatif)
+- logP : log des p-values (plus c'est négatif et plus c'est significatif)
+
+
+# Détection de motifs 
+srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl merge_just_chr_ChIPseq_TBP_rep1_peaks.narrowPeak_just_chr_ChIPseq_TBP_rep2_peaks.narrowPeak mm10 ./motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6

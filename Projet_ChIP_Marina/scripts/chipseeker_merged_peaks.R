@@ -207,7 +207,187 @@ dev.off()
 
 
 
+######################################################################
+#### Comptage du nombre de bases sous les peaks de chaque facteur ####
+######################################################################
 
+#### Oct4
+Oct4_avant2000 <- subset(Oct4_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+Oct4_apres2000 <- subset(Oct4_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+Oct4_distal <- rbind(Oct4_avant2000, Oct4_apres2000) 
+head(Oct4_distal)
+
+Oct4_prox <- subset(Oct4_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+Oct4_prox <- subset(Oct4_prox, distanceToTSS <= 100) 
+head(Oct4_prox)
+
+nb_pb_peaks_Oct_distal <- sum(Oct4_distal$width)
+nb_pb_peaks_Oct_distal
+
+nb_pb_peaks_Oct_prox <- sum(Oct4_prox$width)
+nb_pb_peaks_Oct_prox
+
+nb_pb_peaks_Oct_total <- sum(Oct4_annot$width)
+nb_pb_peaks_Oct_total
+
+
+
+#### TBP
+TBP_avant2000 <- subset(TBP_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+TBP_apres2000 <- subset(TBP_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+TBP_distal <- rbind(TBP_avant2000, TBP_apres2000) 
+head(TBP_distal)
+
+TBP_prox <- subset(TBP_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+TBP_prox <- subset(TBP_prox, distanceToTSS <= 100) 
+head(TBP_prox)
+
+nb_pb_peaks_TBP_distal <- sum(TBP_distal$width)
+nb_pb_peaks_TBP_distal
+
+nb_pb_peaks_TBP_prox <- sum(TBP_prox$width)
+nb_pb_peaks_TBP_prox
+
+nb_pb_peaks_TBP_total <- sum(TBP_annot$width)
+nb_pb_peaks_TBP_total
+
+
+#### CTCF
+CTCF_avant2000 <- subset(CTCF_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+CTCF_apres2000 <- subset(CTCF_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+CTCF_distal <- rbind(CTCF_avant2000, CTCF_apres2000) 
+head(CTCF_distal)
+
+CTCF_prox <- subset(CTCF_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+CTCF_prox <- subset(CTCF_prox, distanceToTSS <= 100) 
+head(CTCF_prox)
+
+nb_pb_peaks_CTCF_distal <- sum(CTCF_distal$width)
+nb_pb_peaks_CTCF_distal
+
+nb_pb_peaks_CTCF_prox <- sum(CTCF_prox$width)
+nb_pb_peaks_CTCF_prox
+
+nb_pb_peaks_CTCF_total <- sum(CTCF_annot$width)
+nb_pb_peaks_CTCF_total
+
+
+#### Pol2
+Pol2_avant2000 <- subset(Pol2_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+Pol2_apres2000 <- subset(Pol2_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+Pol2_distal <- rbind(Pol2_avant2000, Pol2_apres2000) 
+head(Pol2_distal)
+
+Pol2_prox <- subset(Pol2_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+Pol2_prox <- subset(Pol2_prox, distanceToTSS <= 100) 
+head(Pol2_prox)
+
+nb_pb_peaks_Pol2_distal <- sum(Pol2_distal$width)
+nb_pb_peaks_Pol2_distal
+
+nb_pb_peaks_Pol2_prox <- sum(Pol2_prox$width)
+nb_pb_peaks_Pol2_prox
+
+nb_pb_peaks_Pol2_total <- sum(Pol2_annot$width)
+nb_pb_peaks_Pol2_total
+
+
+#### Chd8
+Chd8_avant2000 <- subset(Chd8_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+Chd8_apres2000 <- subset(Chd8_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+Chd8_distal <- rbind(Chd8_avant2000, Chd8_apres2000) 
+head(Chd8_distal)
+
+Chd8_prox <- subset(Chd8_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+Chd8_prox <- subset(Chd8_prox, distanceToTSS <= 100) 
+head(Chd8_prox)
+
+nb_pb_peaks_Chd8_distal <- sum(Chd8_distal$width)
+nb_pb_peaks_Chd8_distal
+
+nb_pb_peaks_Chd8_prox <- sum(Chd8_prox$width)
+nb_pb_peaks_Chd8_prox
+
+nb_pb_peaks_Chd8_total <- sum(Chd8_annot$width)
+nb_pb_peaks_Chd8_total
+
+
+#### Génome de mm10
+samplefiles_genome <- list.files("/home/mnocente/Bureau/", pattern= ".bed",full.names = T)
+samplefiles_genome <- as.list(samplefiles_genome)
+names(samplefiles_genome) <- c("genome_mm10")
+
+peakAnnoList_genome <- lapply(samplefiles_genome, annotatePeak, TxDb=txdb, tssRegion=c(-1000, 1000), verbose=FALSE)
+print(peakAnnoList_genome)
+
+genome_annot <- as.data.frame(peakAnnoList_genome[["genome_mm10"]]@anno)
+sum(genome_annot$width)
+
+
+
+
+
+####################################################################
+#### Peaks communs Oct4_CTCF ####
+####################################################################
+##### Loading des data #####
+# As input we need to provide the names of our BED files in a list format.
+# les replicats de Oct4 ont été mergés puis avec CTCF. On regarde les peaks communs à CTCF et Oct4.
+samplefiles_merge <- list.files("/home/mnocente/Bureau/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2_peaks/merge/final/CTCF_Oct4", pattern= ".narrowPeak",full.names = T)
+samplefiles_merge <- as.list(samplefiles_merge)
+names(samplefiles_merge) <- c("CTCF_Oct4")
+
+print(samplefiles_merge)
+
+##### Assign annotation db #####
+
+# We need to assign annotation databases generated from UCSC to a variable:
+
+txdb <- TxDb.Mmusculus.UCSC.mm10.knownGene
+print("les annotations ont bien été chargés")
+
+# ChIPseeker et sa fonction annotatePeak permettent d'annoter les pics avec le gène et la région génomique les plus proches de là où se trouve le pic.
+# The annotatePeak function by default uses the TSS method, and provides parameters to specify a max distance cutoff.
+
+
+##### Get annotations #####
+peakAnnoList_merge <- lapply(samplefiles_merge, annotatePeak, TxDb=txdb, 
+                       tssRegion=c(-1000, 1000), verbose=FALSE)
+
+print(peakAnnoList_merge) # annotation information is stored in the peakAnnoList_merge
+
+
+##### Visualisation des annotations #####
+
+## Barchart (multiple samples for comparison)
+png(file = "Barchart_comparison_sample_annotation_CTCF_Oct4_commun.png")
+plotAnnoBar(peakAnnoList_merge)
+dev.off()
+
+## Distribution of TF-binding loci relative to TSS
+png(file = "Distribution_of_TF-binding_loci_relative_to_TSS_CTCF_Oct4_commun.png")
+plotDistToTSS(peakAnnoList_merge, title="Distribution of transcription factor-binding loci \n relative to TSS")
+dev.off()
+
+
+### Get annotation data frame
+library(dplyr)
+CTCF_Oct4_annot <- as.data.frame(peakAnnoList_merge[["CTCF_Oct4"]]@anno)
+head(CTCF_Oct4_annot$distanceToTSS)
+
+
+### La liste de gènes des annotations Oct4 et CTCF commun en entree pour une analyse d'enrichissement GO.
+
+## Run GO enrichment analysis 
+entrezids_CTCF_Oct4 <- CTCF_Oct4_annot$geneId %>% as.character() %>% unique()
+
+ego_CTCF_Oct4 <- enrichGO(gene = entrezids_CTCF_Oct4, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
+
+
+## Dotplot visualization
+png(file = "dotplotfunctional_enrichment_CTCF_Oct4_commun.png", width = 750, height = 1000)
+dotplot(ego_CTCF_Oct4, showCategory=50)
+dev.off()
 
 
 ####################################################################
