@@ -366,6 +366,56 @@ Oct4 : 3469030 pb
 Chd8 : 1423805 pb
 CTCF : 19756243 pb
 
+# Récupérer le fichier GTF de mm10, garder uniquement les "start_codon", puis les colonnes chr, start, end puis soustraire -2000 à la colonne start et ajouter + 2000 à la colonne end.
+
+grep "start_codon" hgTables.gtf > only_start_codon_hgTables.gtf
+
+cut -f 1,4,5 only_start_codon_hgTables.gtf > good_columns_only_start_codon_hgTables.gtf
+
+awk '{print $1"\t"$2-2000"\t"$3+2000}' good_columns_only_start_codon_hgTables.gtf > coordonnees_good_columns_only_start_codon_hgTables.bed
+
+Je vérifie sur IGV en important mon fichier .bed final et le gtf du début (comparable à ce qu'on a dans RefSeq avec des transcrits en plus).
+
+
+
+# A partir du fichier fasta du génome utilisé pour l'alignement, on masque les régions qui ne m'intéressent pas avec des Z à partir du fichier bed de mes régions "proximale" (-2000:+2000). On supprime ensuite les Z.
+
+## Suppression des coordonnées négatifs, remplacé par 1.
+awk '$2<0 {print $1"\t"1"\t"$3}' coordonnees_TSS2000_good_columns_only_start_codon_hgTables.bed > positif_coordonnees_TSS2000_good_columns_only_start_codon_hgTables.bed
+
+## Mask your regions with a "Z"" character
+bedtools maskfasta -mc Z -fi /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/raw_data/Genome_souris/GRCm38.primary_assembly.genome.fa -bed /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/raw_data/Genome_souris/coordonnees_TSS2000_good_columns_only_start_codon_hgTables.bed -fo masked.fasta
+
+## Replace the masked regions with no characters
+sed -i 's/Z//g' masked.fasta > result_distal.fasta
+
+## Taille des régions promotrices (calculé la taille des régions promotrices en créant un fichier bed à partir du fichier gtf que tu as transformé en ajoutant ou soustrayant 2000)
+awk '{SUM += $3-$2} END {print SUM}' coordonnees_TSS2000_good_columns_only_start_codon_hgTables.bed
+305247993
+
+## Nombre de pb sur le génome entier (tous les chromosomes)
+awk '{SUM += $2} END {print SUM}' mm10.chrom.sizes_tri_final
+2.72554e+09
+
+## taille du génome sans les promoteurs revient à : taille du génome - taille des régions promotrices
+2.72554e+09 - 305247993 = 2420292007
+
+
+
+
+# Récupérer le fichier GTF de mm10, garder uniquement les "start_codon", puis les colonnes chr, start, end puis soustraire -400 à la colonne start et ajouter + 100 à la colonne end.
+
+awk '{print $1"\t"$2-400"\t"$3+100}' good_columns_only_start_codon_hgTables.gtf > coordonnees_TSS400100_proximale.bed
+
+## Taille des régions promotrices (calculé la taille des régions promotrices en créant un fichier bed à partir du fichier gtf que tu as transformé en ajoutant ou soustrayant 2000)
+awk '{SUM += $3-$2} END {print SUM}' coordonnees_TSS400100_proximale.bed
+38288993
+
+## Nombre de pb sur le génome entier (tous les chromosomes)
+awk '{SUM += $2} END {print SUM}' mm10.chrom.sizes_tri_final
+2.72554e+09
+
+
 
 
 # Chercher les peaks communs à CTCF et Oct4:
@@ -378,16 +428,6 @@ On obtient 3 listes :
 
 
 
-# Récupérer le fichier GTF de mm10, garder uniquement les "start_codon", puis les colonnes chr, start, end puis soustraire -2000 à la colonne start et ajouter + 2000 à la colonne end.
-
-grep "start_codon" hgTables.gtf > only_start_codon_hgTables.gtf
-
-cut -f 1,4,5 only_start_codon_hgTables.gtf > good_columns_only_start_codon_hgTables.gtf
-
-awk '{print $1"\t"$2-2000"\t"$3+2000}' good_columns_only_start_codon_hgTables.gtf > coordonnees_good_columns_only_start_codon_hgTables.bed
-
-Je vérifie sur IGV en important mon fichier .bed final et le gtf du début (comparable à ce qu'on a dans RefSeq avec des transcrits en plus).
-
 
 # Annotation avec HOMER et stats
 
@@ -395,7 +435,7 @@ srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl merge_
 
 srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl merge_just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak_just_chr_ChIPseq_Chd8_rep2_peaks.narrowPeak mm10 -annStats stats_Chd8_annot_HOMER > ./annotated_peaks_HOMER/annotated_peaks_HOMER_Chd8_merge.txt
 
-
+srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl merge_Chd8_TBP_Pol2_merge_Chd8_rep_rep2.narrowPeak_merge_Pol2_rep1_rep2.narrowPeak_merge_TBP_rep1_rep2.narrowPeak mm10 -annStats ./annotated_peaks_HOMER/stats_Chd8_TBP_Pol2_annot_HOMER > ./annotated_peaks_HOMER/annotated_peaks_HOMER_Chd8_TBP_Pol2_merge.txt
 
 Dans le fichier de statistiques, on a accès à différentes stats pour les différents elements annotes: 
 - log2Ratio : enrichissement (si + enrichissement positif, si - enrichissement negatif)

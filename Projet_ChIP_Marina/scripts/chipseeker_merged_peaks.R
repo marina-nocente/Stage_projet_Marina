@@ -230,7 +230,9 @@ nb_pb_peaks_Oct_prox
 nb_pb_peaks_Oct_total <- sum(Oct4_annot$width)
 nb_pb_peaks_Oct_total
 
-
+# On exporte les fichiers contenant les peaks d'Oct4 distaux et proximaux
+write.table(x = Oct4_distal, file = "peaks_Oct4_distaux.tsv", sep = "\t")
+write.table(x = Oct4_prox, file = "peaks_Oct4_proximaux.tsv", sep = "\t")
 
 #### TBP
 TBP_avant2000 <- subset(TBP_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
@@ -324,7 +326,53 @@ genome_annot <- as.data.frame(peakAnnoList_genome[["genome_mm10"]]@anno)
 sum(genome_annot$width)
 
 
+####################################################################
+#### Tables de contingence sur la partie distale ####
+####################################################################
+nb_pb_genome_mm10 <- 2.72554e+09
+nb_pb_region_distale_mm10 <- 2420292007
+nb_pb_region_proximale_mm10_400 <- 38288993
 
+### Oct4 au niveau distal
+nombre_pb_aux_peaks_Oct4_dist <- c(nb_pb_peaks_Oct_distal, nb_pb_peaks_Oct_total)
+nombre_pb_aux_peaks_Oct4_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist
+
+contingence_table_Oct4_dist <- data.frame(nombre_pb_aux_peaks_Oct4_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Oct4_dist
+
+colnames(contingence_table_Oct4_dist) <- c("nombre_pb_aux_peaks_Oct4", "nombre_pb_sur_genome_entier")
+contingence_table_Oct4_dist
+
+rownames(contingence_table_Oct4_dist) <- c("region_distale", "genome_complet")
+contingence_table_Oct4_dist
+
+
+test_Chi2_Oct4_distal <- chisq.test(x = contingence_table_Oct4_dist, y = NULL, correct = TRUE,
+                                   p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                   simulate.p.value = FALSE, B = 2000)
+
+### Oct4 au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_Oct4_prox <- c(nb_pb_peaks_Oct_prox, nb_pb_peaks_Oct_total)
+nombre_pb_aux_peaks_Oct4_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox
+
+contingence_table_Oct4_prox <- data.frame(nombre_pb_aux_peaks_Oct4_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Oct4_prox
+
+colnames(contingence_table_Oct4_prox) <- c("nombre_pb_aux_peaks_Oct4", "nombre_pb_sur_genome_entier")
+contingence_table_Oct4_prox
+
+rownames(contingence_table_Oct4_prox) <- c("region_proximale", "genome_complet")
+contingence_table_Oct4_prox
+
+
+
+testChi2_Oct4_prox <- chisq.test(x = contingence_table_Oct4_prox, y = NULL, correct = TRUE,
+                                 p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                 simulate.p.value = FALSE, B = 2000)
 
 
 ####################################################################
