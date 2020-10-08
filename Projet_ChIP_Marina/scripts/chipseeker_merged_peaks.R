@@ -24,9 +24,9 @@ print("les libraries ont bien été chargées")
 ##### Loading des data #####
 # As input we need to provide the names of our BED files in a list format.
 # les replicats de Pol2, TBP, CHd8 et Oct4 ont été mergés. On n'avait malheureusement pas de duplicat pour CTCF donc j'ai gardé tous les peaks.
-samplefiles <- list.files("/home/mnocente/Bureau/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2_peaks/merge/final", pattern= ".narrowPeak",full.names = T)
+samplefiles <- list.files("/shared/home/mnocente/macs2/merge/final/modif_final", pattern= ".narrowPeak",full.names = T)
 samplefiles <- as.list(samplefiles)
-names(samplefiles) <- c("CTCF", "Chd8", "Oct4", "Pol2", "TBP")
+names(samplefiles) <- c("Chd8_Oct4_merge", "Chd8", "Chd8_TBP_Pol2_merge", "Oct4", "Oct4_CTCF_merge", "Pol2", "TBP", "CTCF")
 
 print("les fichiers ont bien été chargés")
 print(samplefiles)
@@ -52,12 +52,12 @@ print(peakAnnoList) # annotation information is stored in the peakAnnoList
 ##### Visualisation des annotations #####
 
 ## Barchart (multiple samples for comparison)
-png(file = "Barchart_comparison_sample_annotation.png")
+png(file = "Barchart_comparison_sample_annotation_all_samples_merges.png")
 plotAnnoBar(peakAnnoList)
 dev.off()
 
 ## Distribution of TF-binding loci relative to TSS
-png(file = "Distribution_of_TF-binding_loci_relative_to_TSS.png")
+png(file = "Distribution_of_TF-binding_loci_relative_to_TSS_all_samples_merges.png")
 plotDistToTSS(peakAnnoList, title="Distribution of transcription factor-binding loci \n relative to TSS")
 dev.off()
 
@@ -69,6 +69,9 @@ TBP_annot <- as.data.frame(peakAnnoList[["TBP"]]@anno)
 CTCF_annot <- as.data.frame(peakAnnoList[["CTCF"]]@anno)
 Pol2_annot <- as.data.frame(peakAnnoList[["Pol2"]]@anno)
 Chd8_annot <- as.data.frame(peakAnnoList[["Chd8"]]@anno)
+Chd8_Oct4_merge_annot <- as.data.frame(peakAnnoList[["Chd8_Oct4_merge"]]@anno)
+Chd8_TBP_Pol2_merge_annot <- as.data.frame(peakAnnoList[["Chd8_TBP_Pol2_merge"]]@anno)
+Oct4_CTCF_merge_annot <- as.data.frame(peakAnnoList[["Oct4_CTCF_merge"]]@anno)
 
 # dans ce dataframe, la derniere colonne correspond à la distance au TSS.
 # Dans ces dataframes, on doit voir des colonnes correspondant au fichier BED d'entrée et des colonnes supplémentaires contenant le ou les gènes les plus proches, la distance entre le pic et le TSS du gène le plus proche, la région génomique du pic et d'autres informations. 
@@ -176,6 +179,48 @@ dev.off()
 
 
 
+### La liste de gènes des annotations Chd8_Oct4_merge en entree pour une analyse d'enrichissement GO.
+
+## Run GO enrichment analysis 
+entrezids_Chd8_Oct4_merge <- Chd8_Oct4_merge_annot$geneId %>% as.character() %>% unique()
+
+ego_Chd8_Oct4_merge <- enrichGO(gene = entrezids_Chd8_Oct4_merge, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
+
+
+## Dotplot visualization
+png(file = "dotplotfunctional_enrichment_Chd8_Oct4_merge.png", width = 750, height = 1000)
+dotplot(ego_Chd8_Oct4_merge, showCategory=20)
+dev.off()
+
+
+### La liste de gènes des annotations Chd8_TBP_Pol2_merge en entree pour une analyse d'enrichissement GO.
+
+## Run GO enrichment analysis 
+entrezids_Chd8_TBP_Pol2_merge <- Chd8_TBP_Pol2_merge_annot$geneId %>% as.character() %>% unique()
+
+ego_Chd8_TBP_Pol2_merge <- enrichGO(gene = entrezids_Chd8_TBP_Pol2_merge, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
+
+
+## Dotplot visualization
+png(file = "dotplotfunctional_enrichment_Chd8_TBP_Pol2_merge.png", width = 750, height = 1000)
+dotplot(ego_Chd8_TBP_Pol2_merge, showCategory=20)
+dev.off()
+
+
+### La liste de gènes des annotations Oct4_CTCF_merge en entree pour une analyse d'enrichissement GO.
+
+## Run GO enrichment analysis 
+entrezids_Oct4_CTCF_merge <- Oct4_CTCF_merge_annot$geneId %>% as.character() %>% unique()
+
+ego_Oct4_CTCF_merge <- enrichGO(gene = entrezids_Oct4_CTCF_merge, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
+
+
+## Dotplot visualization
+png(file = "dotplotfunctional_enrichment_Oct4_CTCF_merge.png", width = 750, height = 1000)
+dotplot(ego_Oct4_CTCF_merge, showCategory=20)
+dev.off()
+
+
 ### Multiple samples ###
 
 # Notre ensemble de données se compose de peaks de plusieurs facteurs différents, il serait donc utile de comparer les résultats d'enrichissement fonctionnel.
@@ -189,10 +234,9 @@ compKEGG <- compareCluster(geneCluster = genes,
                            pvalueCutoff  = 0.05, 
                            pAdjustMethod = "BH")
 
-png(file = "KEGG_Pathway_Enrichment_Analysis.png", width = 1100, height = 1100)
+png(file = "KEGG_Pathway_Enrichment_Analysis_all_sample_merge.png", width = 1100, height = 1100)
 dotplot(compKEGG, showCategory = 20, title = "KEGG_Pathway_Enrichment_Analysis")
 dev.off()
-
 
 
 
@@ -205,6 +249,30 @@ genesOverlap= lapply(peakAnnoList_all, function(i) as.data.frame(i)$geneId)
 vennplot(genesOverlap)
 dev.off()
 
+png(file = "Vennplot_Oct4_CTCF.png", width = 500, height = 500)
+peakAnnoList_Oct4_CTCF <- c(peakAnnoList$Oct4, peakAnnoList$CTCF)
+names(peakAnnoList_Oct4_CTCF) <- c("Oct4", "CTCF")
+peakAnnoList_Oct4_CTCF
+genesOverlap_Oct4_CTCF= lapply(peakAnnoList_Oct4_CTCF, function(i) as.data.frame(i)$geneId)
+vennplot(genesOverlap_Oct4_CTCF)
+dev.off()
+
+
+png(file = "Vennplot_Chd8_TBP_Pol2.png", width = 500, height = 500)
+peakAnnoList_Chd8_TBP_Pol2 <- c(peakAnnoList$Chd8, peakAnnoList$TBP, peakAnnoList$Pol2)
+names(peakAnnoList_Chd8_TBP_Pol2) <- c("Chd8", "TBP", "Pol2")
+peakAnnoList_Chd8_TBP_Pol2
+genesOverlap_Chd8_TBP_Pol2= lapply(peakAnnoList_Chd8_TBP_Pol2, function(i) as.data.frame(i)$geneId)
+vennplot(genesOverlap_Chd8_TBP_Pol2)
+dev.off()
+
+png(file = "Vennplot_Chd8_Oct4.png", width = 500, height = 500)
+peakAnnoList_Chd8_Oct4 <- c(peakAnnoList$Chd8, peakAnnoList$Oct4)
+names(peakAnnoList_Chd8_Oct4) <- c("Chd8", "Oct4")
+peakAnnoList_Chd8_Oct4
+genesOverlap_Chd8_Oct4= lapply(peakAnnoList_Chd8_Oct4, function(i) as.data.frame(i)$geneId)
+vennplot(genesOverlap_Chd8_Oct4)
+dev.off()
 
 
 ######################################################################
@@ -234,6 +302,7 @@ nb_pb_peaks_Oct_total
 write.table(x = Oct4_distal, file = "peaks_Oct4_distaux.tsv", sep = "\t")
 write.table(x = Oct4_prox, file = "peaks_Oct4_proximaux.tsv", sep = "\t")
 
+
 #### TBP
 TBP_avant2000 <- subset(TBP_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
 TBP_apres2000 <- subset(TBP_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
@@ -253,6 +322,9 @@ nb_pb_peaks_TBP_prox
 nb_pb_peaks_TBP_total <- sum(TBP_annot$width)
 nb_pb_peaks_TBP_total
 
+# On exporte les fichiers contenant les peaks d'Oct4 distaux et proximaux
+write.table(x = TBP_distal, file = "peaks_TBP_distaux.tsv", sep = "\t")
+write.table(x = TBP_prox, file = "peaks_TBP_proximaux.tsv", sep = "\t")
 
 #### CTCF
 CTCF_avant2000 <- subset(CTCF_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
@@ -272,6 +344,10 @@ nb_pb_peaks_CTCF_prox
 
 nb_pb_peaks_CTCF_total <- sum(CTCF_annot$width)
 nb_pb_peaks_CTCF_total
+
+# On exporte les fichiers contenant les peaks de TBP distaux et proximaux
+write.table(x = CTCF_distal, file = "peaks_CTCF_distaux.tsv", sep = "\t")
+write.table(x = CTCF_prox, file = "peaks_CTCF_proximaux.tsv", sep = "\t")
 
 
 #### Pol2
@@ -293,6 +369,10 @@ nb_pb_peaks_Pol2_prox
 nb_pb_peaks_Pol2_total <- sum(Pol2_annot$width)
 nb_pb_peaks_Pol2_total
 
+# On exporte les fichiers contenant les peaks de Pol2 distaux et proximaux
+write.table(x = Pol2_distal, file = "peaks_Pol2_distaux.tsv", sep = "\t")
+write.table(x = Pol2_prox, file = "peaks_Pol2_proximaux.tsv", sep = "\t")
+
 
 #### Chd8
 Chd8_avant2000 <- subset(Chd8_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
@@ -313,6 +393,84 @@ nb_pb_peaks_Chd8_prox
 nb_pb_peaks_Chd8_total <- sum(Chd8_annot$width)
 nb_pb_peaks_Chd8_total
 
+# On exporte les fichiers contenant les peaks de Chd8 distaux et proximaux
+write.table(x = Chd8_distal, file = "peaks_Chd8_distaux.tsv", sep = "\t")
+write.table(x = Chd8_prox, file = "peaks_Chd8_proximaux.tsv", sep = "\t")
+
+
+#### Chd8_Oct4_merge
+Chd8_Oct4_merge_avant2000 <- subset(Chd8_Oct4_merge_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+Chd8_Oct4_merge_apres2000 <- subset(Chd8_Oct4_merge_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+Chd8_Oct4_merge_distal <- rbind(Chd8_Oct4_merge_avant2000, Chd8_Oct4_merge_apres2000) 
+head(Chd8_Oct4_merge_distal)
+
+Chd8_Oct4_merge_prox <- subset(Chd8_Oct4_merge_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+Chd8_Oct4_merge_prox <- subset(Chd8_Oct4_merge_prox, distanceToTSS <= 100) 
+head(Chd8_Oct4_merge_prox)
+
+nb_pb_peaks_Chd8_Oct4_merge_distal <- sum(Chd8_Oct4_merge_distal$width)
+nb_pb_peaks_Chd8_Oct4_merge_distal
+
+nb_pb_peaks_Chd8_Oct4_merge_prox <- sum(Chd8_Oct4_merge_prox$width)
+nb_pb_peaks_Chd8_Oct4_merge_prox
+
+nb_pb_peaks_Chd8_Oct4_merge_total <- sum(Chd8_Oct4_merge_annot$width)
+nb_pb_peaks_Chd8_Oct4_merge_total
+
+# On exporte les fichiers contenant les peaks de Chd8 distaux et proximaux
+write.table(x = Chd8_Oct4_merge_distal, file = "peaks_Chd8_Oct4_merge_distaux.tsv", sep = "\t")
+write.table(x = Chd8_Oct4_merge_prox, file = "peaks_Chd8_Oct4_merge_proximaux.tsv", sep = "\t")
+
+
+
+#### Chd8_TBP_Pol2_merge
+Chd8_TBP_Pol2_merge_avant2000 <- subset(Chd8_TBP_Pol2_merge_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+Chd8_TBP_Pol2_merge_apres2000 <- subset(Chd8_TBP_Pol2_merge_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+Chd8_TBP_Pol2_merge_distal <- rbind(Chd8_TBP_Pol2_merge_avant2000, Chd8_TBP_Pol2_merge_apres2000) 
+head(Chd8_TBP_Pol2_merge_distal)
+
+Chd8_TBP_Pol2_merge_prox <- subset(Chd8_TBP_Pol2_merge_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+Chd8_TBP_Pol2_merge_prox <- subset(Chd8_TBP_Pol2_merge_prox, distanceToTSS <= 100) 
+head(Chd8_TBP_Pol2_merge_prox)
+
+nb_pb_peaks_Chd8_TBP_Pol2_merge_distal <- sum(Chd8_TBP_Pol2_merge_distal$width)
+nb_pb_peaks_Chd8_TBP_Pol2_merge_distal
+
+nb_pb_peaks_Chd8_TBP_Pol2_merge_prox <- sum(Chd8_TBP_Pol2_merge_prox$width)
+nb_pb_peaks_Chd8_TBP_Pol2_merge_prox
+
+nb_pb_peaks_Chd8_TBP_Pol2_merge_total <- sum(Chd8_TBP_Pol2_merge_annot$width)
+nb_pb_peaks_Chd8_TBP_Pol2_merge_total
+
+# On exporte les fichiers contenant les peaks de Chd8_TBP_Pol2_merge distaux et proximaux
+write.table(x = Chd8_TBP_Pol2_merge_distal, file = "peaks_Chd8_TBP_Pol2_merge_distaux.tsv", sep = "\t")
+write.table(x = Chd8_TBP_Pol2_merge_prox, file = "peaks_Chd8_TBP_Pol2_merge_proximaux.tsv", sep = "\t")
+
+
+#### Oct4_CTCF_merge
+Oct4_CTCF_merge_avant2000 <- subset(Oct4_CTCF_merge_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+Oct4_CTCF_merge_apres2000 <- subset(Oct4_CTCF_merge_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+Oct4_CTCF_merge_distal <- rbind(Oct4_CTCF_merge_avant2000, Oct4_CTCF_merge_apres2000) 
+head(Oct4_CTCF_merge_distal)
+
+Oct4_CTCF_merge_prox <- subset(Oct4_CTCF_merge_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+Oct4_CTCF_merge_prox <- subset(Oct4_CTCF_merge_prox, distanceToTSS <= 100) 
+head(Oct4_CTCF_merge_prox)
+
+nb_pb_peaks_Oct_CTCF_merge_distal <- sum(Oct4_CTCF_merge_distal$width)
+nb_pb_peaks_Oct_CTCF_merge_distal
+
+nb_pb_peaks_Oct_CTCF_merge_prox <- sum(Oct4_CTCF_merge_prox$width)
+nb_pb_peaks_Oct_CTCF_merge_prox
+
+nb_pb_peaks_Oct_CTCF_merge_total <- sum(Oct4_CTCF_merge_annot$width)
+nb_pb_peaks_Oct_CTCF_merge_total
+
+# On exporte les fichiers contenant les peaks d'Oct4_CTCF_merge distaux et proximaux
+write.table(x = Oct4_CTCF_merge_distal, file = "peaks_Oct4_CTCF_merge_distaux.tsv", sep = "\t")
+write.table(x = Oct4_CTCF_merge_prox, file = "peaks_Oct4_CTCF_merge_proximaux.tsv", sep = "\t")
+
+
 
 #### Génome de mm10
 samplefiles_genome <- list.files("/home/mnocente/Bureau/", pattern= ".bed",full.names = T)
@@ -326,13 +484,15 @@ genome_annot <- as.data.frame(peakAnnoList_genome[["genome_mm10"]]@anno)
 sum(genome_annot$width)
 
 
-####################################################################
-#### Tables de contingence sur la partie distale ####
-####################################################################
+############################################################################################################
+#### Tables de contingence des differents facteurs et merges ####
+#### Test du Chi2 pour tester la significativité de l'enrichissement du facteur sur la region d'interet ####
+############################################################################################################
 nb_pb_genome_mm10 <- 2.72554e+09
 nb_pb_region_distale_mm10 <- 2420292007
 nb_pb_region_proximale_mm10_400 <- 38288993
 
+#### Oct4
 ### Oct4 au niveau distal
 nombre_pb_aux_peaks_Oct4_dist <- c(nb_pb_peaks_Oct_distal, nb_pb_peaks_Oct_total)
 nombre_pb_aux_peaks_Oct4_dist
@@ -352,6 +512,8 @@ contingence_table_Oct4_dist
 test_Chi2_Oct4_distal <- chisq.test(x = contingence_table_Oct4_dist, y = NULL, correct = TRUE,
                                    p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                    simulate.p.value = FALSE, B = 2000)
+test_Chi2_Oct4_distal
+
 
 ### Oct4 au niveau proximal : -400 : +100
 nombre_pb_aux_peaks_Oct4_prox <- c(nb_pb_peaks_Oct_prox, nb_pb_peaks_Oct_total)
@@ -369,10 +531,336 @@ rownames(contingence_table_Oct4_prox) <- c("region_proximale", "genome_complet")
 contingence_table_Oct4_prox
 
 
-
 testChi2_Oct4_prox <- chisq.test(x = contingence_table_Oct4_prox, y = NULL, correct = TRUE,
                                  p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                  simulate.p.value = FALSE, B = 2000)
+
+testChi2_Oct4_prox
+
+
+#### TBP
+### TBP au niveau distal
+nombre_pb_aux_peaks_TBP_dist <- c(nb_pb_peaks_TBP_distal, nb_pb_peaks_TBP_total)
+nombre_pb_aux_peaks_TBP_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist
+
+contingence_table_TBP_dist <- data.frame(nombre_pb_aux_peaks_TBP_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_TBP_dist
+
+colnames(contingence_table_TBP_dist) <- c("nombre_pb_aux_peaks_TBP", "nombre_pb_sur_genome_entier")
+contingence_table_TBP_dist
+
+rownames(contingence_table_TBP_dist) <- c("region_distale", "genome_complet")
+contingence_table_TBP_dist
+
+
+test_Chi2_TBP_distal <- chisq.test(x = contingence_table_TBP_dist, y = NULL, correct = TRUE,
+                                    p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                    simulate.p.value = FALSE, B = 2000)
+test_Chi2_TBP_distal
+
+
+### TBP au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_TBP_prox <- c(nb_pb_peaks_TBP_prox, nb_pb_peaks_TBP_total)
+nombre_pb_aux_peaks_TBP_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox
+
+contingence_table_TBP_prox <- data.frame(nombre_pb_aux_peaks_TBP_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_TBP_prox
+
+colnames(contingence_table_TBP_prox) <- c("nombre_pb_aux_peaks_TBP", "nombre_pb_sur_genome_entier")
+contingence_table_TBP_prox
+
+rownames(contingence_table_TBP_prox) <- c("region_proximale", "genome_complet")
+contingence_table_TBP_prox
+
+
+testChi2_TBP_prox <- chisq.test(x = contingence_table_TBP_prox, y = NULL, correct = TRUE,
+                                 p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                 simulate.p.value = FALSE, B = 2000)
+
+testChi2_TBP_prox
+
+
+#### Pol2
+### Pol2 au niveau distal
+nombre_pb_aux_peaks_Pol2_dist <- c(nb_pb_peaks_Pol2_distal, nb_pb_peaks_Pol2_total)
+nombre_pb_aux_peaks_Pol2_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist
+
+contingence_table_Pol2_dist <- data.frame(nombre_pb_aux_peaks_Pol2_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Pol2_dist
+
+colnames(contingence_table_Pol2_dist) <- c("nombre_pb_aux_peaks_Pol2", "nombre_pb_sur_genome_entier")
+contingence_table_Pol2_dist
+
+rownames(contingence_table_Pol2_dist) <- c("region_distale", "genome_complet")
+contingence_table_Pol2_dist
+
+
+test_Chi2_Pol2_distal <- chisq.test(x = contingence_table_Pol2_dist, y = NULL, correct = TRUE,
+                                   p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                   simulate.p.value = FALSE, B = 2000)
+test_Chi2_Pol2_distal
+
+
+### Pol2 au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_Pol2_prox <- c(nb_pb_peaks_Pol2_prox, nb_pb_peaks_Pol2_total)
+nombre_pb_aux_peaks_Pol2_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox
+
+contingence_table_Pol2_prox <- data.frame(nombre_pb_aux_peaks_Pol2_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Pol2_prox
+
+colnames(contingence_table_Pol2_prox) <- c("nombre_pb_aux_peaks_Pol2", "nombre_pb_sur_genome_entier")
+contingence_table_Pol2_prox
+
+rownames(contingence_table_Pol2_prox) <- c("region_proximale", "genome_complet")
+contingence_table_Pol2_prox
+
+
+testChi2_Pol2_prox <- chisq.test(x = contingence_table_Pol2_prox, y = NULL, correct = TRUE,
+                                p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                simulate.p.value = FALSE, B = 2000)
+
+testChi2_Pol2_prox
+
+
+#### CTCF
+### CTCF au niveau distal
+nombre_pb_aux_peaks_CTCF_dist <- c(nb_pb_peaks_CTCF_distal, nb_pb_peaks_CTCF_total)
+nombre_pb_aux_peaks_CTCF_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist
+
+contingence_table_CTCF_dist <- data.frame(nombre_pb_aux_peaks_CTCF_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_CTCF_dist
+
+colnames(contingence_table_CTCF_dist) <- c("nombre_pb_aux_peaks_CTCF", "nombre_pb_sur_genome_entier")
+contingence_table_CTCF_dist
+
+rownames(contingence_table_CTCF_dist) <- c("region_distale", "genome_complet")
+contingence_table_CTCF_dist
+
+
+test_Chi2_CTCF_distal <- chisq.test(x = contingence_table_CTCF_dist, y = NULL, correct = TRUE,
+                                    p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                    simulate.p.value = FALSE, B = 2000)
+test_Chi2_CTCF_distal
+
+
+### CTCF au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_CTCF_prox <- c(nb_pb_peaks_CTCF_prox, nb_pb_peaks_CTCF_total)
+nombre_pb_aux_peaks_CTCF_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox
+
+contingence_table_CTCF_prox <- data.frame(nombre_pb_aux_peaks_CTCF_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_CTCF_prox
+
+colnames(contingence_table_CTCF_prox) <- c("nombre_pb_aux_peaks_CTCF", "nombre_pb_sur_genome_entier")
+contingence_table_CTCF_prox
+
+rownames(contingence_table_CTCF_prox) <- c("region_proximale", "genome_complet")
+contingence_table_CTCF_prox
+
+
+testChi2_CTCF_prox <- chisq.test(x = contingence_table_CTCF_prox, y = NULL, correct = TRUE,
+                                 p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                 simulate.p.value = FALSE, B = 2000)
+
+testChi2_CTCF_prox
+
+
+#### Chd8
+### Chd8 au niveau distal
+nombre_pb_aux_peaks_Chd8_dist <- c(nb_pb_peaks_Chd8_distal, nb_pb_peaks_Chd8_total)
+nombre_pb_aux_peaks_Chd8_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist
+
+contingence_table_Chd8_dist <- data.frame(nombre_pb_aux_peaks_Chd8_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Chd8_dist
+
+colnames(contingence_table_Chd8_dist) <- c("nombre_pb_aux_peaks_Chd8", "nombre_pb_sur_genome_entier")
+contingence_table_Chd8_dist
+
+rownames(contingence_table_Chd8_dist) <- c("region_distale", "genome_complet")
+contingence_table_Chd8_dist
+
+
+test_Chi2_Chd8_distal <- chisq.test(x = contingence_table_Chd8_dist, y = NULL, correct = TRUE,
+                                    p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                    simulate.p.value = FALSE, B = 2000)
+test_Chi2_Chd8_distal
+
+
+### Chd8 au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_Chd8_prox <- c(nb_pb_peaks_Chd8_prox, nb_pb_peaks_Chd8_total)
+nombre_pb_aux_peaks_Chd8_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox
+
+contingence_table_Chd8_prox <- data.frame(nombre_pb_aux_peaks_Chd8_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Chd8_prox
+
+colnames(contingence_table_Chd8_prox) <- c("nombre_pb_aux_peaks_Chd8", "nombre_pb_sur_genome_entier")
+contingence_table_Chd8_prox
+
+rownames(contingence_table_Chd8_prox) <- c("region_proximale", "genome_complet")
+contingence_table_Chd8_prox
+
+
+testChi2_Chd8_prox <- chisq.test(x = contingence_table_Chd8_prox, y = NULL, correct = TRUE,
+                                 p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                 simulate.p.value = FALSE, B = 2000)
+
+testChi2_Chd8_prox
+
+
+
+#### Chd8_Oct4_merge
+### Chd8_Oct4_merge au niveau distal
+nombre_pb_aux_peaks_Chd8_Oct4_merge_dist <- c(nb_pb_peaks_Chd8_Oct4_merge_distal, nb_pb_peaks_Chd8_Oct4_merge_total)
+nombre_pb_aux_peaks_Chd8_Oct4_merge_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist
+
+contingence_table_Chd8_Oct4_merge_dist <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_merge_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Chd8_Oct4_merge_dist
+
+colnames(contingence_table_Chd8_Oct4_merge_dist) <- c("nombre_pb_aux_peaks_Chd8_Oct4_merge", "nombre_pb_sur_genome_entier")
+contingence_table_Chd8_Oct4_merge_dist
+
+rownames(contingence_table_Chd8_Oct4_merge_dist) <- c("region_distale", "genome_complet")
+contingence_table_Chd8_Oct4_merge_dist
+
+
+test_Chi2_Chd8_Oct4_merge_distal <- chisq.test(x = contingence_table_Chd8_Oct4_merge_dist, y = NULL, correct = TRUE,
+                                    p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                    simulate.p.value = FALSE, B = 2000)
+test_Chi2_Chd8_Oct4_merge_distal
+
+
+### Chd8_Oct4_merge au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_Chd8_Oct4_merge_prox <- c(nb_pb_peaks_Chd8_Oct4_merge_prox, nb_pb_peaks_Chd8_Oct4_merge_total)
+nombre_pb_aux_peaks_Chd8_Oct4_merge_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox
+
+contingence_table_Chd8_Oct4_merge_prox <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Chd8_Oct4_merge_prox
+
+colnames(contingence_table_Chd8_Oct4_merge_prox) <- c("nombre_pb_aux_peaks_Chd8_Oct4_merge", "nombre_pb_sur_genome_entier")
+contingence_table_Chd8_Oct4_merge_prox
+
+rownames(contingence_table_Chd8_Oct4_merge_prox) <- c("region_proximale", "genome_complet")
+contingence_table_Chd8_Oct4_merge_prox
+
+
+testChi2_Chd8_Oct4_merge_prox <- chisq.test(x = contingence_table_Chd8_Oct4_merge_prox, y = NULL, correct = TRUE,
+                                 p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                 simulate.p.value = FALSE, B = 2000)
+
+testChi2_Chd8_Oct4_merge_prox
+
+
+#### Chd8_TBP_Pol2_merge
+### Chd8_TBP_Pol2_merge au niveau distal
+nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_dist <- c(nb_pb_peaks_Chd8_TBP_Pol2_merge_distal, nb_pb_peaks_Chd8_TBP_Pol2_merge_total)
+nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist
+
+contingence_table_Chd8_TBP_Pol2_merge_dist <- data.frame(nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Chd8_TBP_Pol2_merge_dist
+
+colnames(contingence_table_Chd8_TBP_Pol2_merge_dist) <- c("nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge", "nombre_pb_sur_genome_entier")
+contingence_table_Chd8_TBP_Pol2_merge_dist
+
+rownames(contingence_table_Chd8_TBP_Pol2_merge_dist) <- c("region_distale", "genome_complet")
+contingence_table_Chd8_TBP_Pol2_merge_dist
+
+
+test_Chi2_Chd8_TBP_Pol2_merge_distal <- chisq.test(x = contingence_table_Chd8_TBP_Pol2_merge_dist, y = NULL, correct = TRUE,
+                                    p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                    simulate.p.value = FALSE, B = 2000)
+test_Chi2_Chd8_TBP_Pol2_merge_distal
+
+
+### Chd8_TBP_Pol2_merge au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_prox <- c(nb_pb_peaks_Chd8_TBP_Pol2_merge_prox, nb_pb_peaks_Chd8_TBP_Pol2_merge_total)
+nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox
+
+contingence_table_Chd8_TBP_Pol2_merge_prox <- data.frame(nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Chd8_TBP_Pol2_merge_prox
+
+colnames(contingence_table_Chd8_TBP_Pol2_merge_prox) <- c("nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge", "nombre_pb_sur_genome_entier")
+contingence_table_Chd8_TBP_Pol2_merge_prox
+
+rownames(contingence_table_Chd8_TBP_Pol2_merge_prox) <- c("region_proximale", "genome_complet")
+contingence_table_Chd8_TBP_Pol2_merge_prox
+
+
+testChi2_Chd8_TBP_Pol2_merge_prox <- chisq.test(x = contingence_table_Chd8_TBP_Pol2_merge_prox, y = NULL, correct = TRUE,
+                                 p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                 simulate.p.value = FALSE, B = 2000)
+
+testChi2_Chd8_TBP_Pol2_merge_prox
+
+
+
+#### Oct4_CTCF_merge
+### Oct4_CTCF_merge au niveau distal
+nombre_pb_aux_peaks_Oct4_CTCF_merge_dist <- c(nb_pb_peaks_Oct_CTCF_merge_distal, nb_pb_peaks_Oct_CTCF_merge_total)
+nombre_pb_aux_peaks_Oct4_CTCF_merge_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist
+
+contingence_table_Oct4_CTCF_merge_dist <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Oct4_CTCF_merge_dist
+
+colnames(contingence_table_Oct4_CTCF_merge_dist) <- c("nombre_pb_aux_peaks_Oct4_CTCF_merge", "nombre_pb_sur_genome_entier")
+contingence_table_Oct4_CTCF_merge_dist
+
+rownames(contingence_table_Oct4_CTCF_merge_dist) <- c("region_distale", "genome_complet")
+contingence_table_Oct4_CTCF_merge_dist
+
+
+test_Chi2_Oct4_CTCF_merge_distal <- chisq.test(x = contingence_table_Oct4_CTCF_merge_dist, y = NULL, correct = TRUE,
+                                    p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                    simulate.p.value = FALSE, B = 2000)
+test_Chi2_Oct4_CTCF_merge_distal
+
+
+### Oct4_CTCF_merge au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_Oct4_CTCF_merge_prox <- c(nb_pb_peaks_Oct_CTCF_merge_prox, nb_pb_peaks_Oct_CTCF_merge_total)
+nombre_pb_aux_peaks_Oct4_CTCF_merge_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox
+
+contingence_table_Oct4_CTCF_merge_prox <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Oct4_CTCF_merge_prox
+
+colnames(contingence_table_Oct4_CTCF_merge_prox) <- c("nombre_pb_aux_peaks_Oct4_CTCF_merge", "nombre_pb_sur_genome_entier")
+contingence_table_Oct4_CTCF_merge_prox
+
+rownames(contingence_table_Oct4_CTCF_merge_prox) <- c("region_proximale", "genome_complet")
+contingence_table_Oct4_CTCF_merge_prox
+
+
+testChi2_Oct4_CTCF_merge_prox <- chisq.test(x = contingence_table_Oct4_CTCF_merge_prox, y = NULL, correct = TRUE,
+                                 p = rep(1/length(x), length(x)), rescale.p = FALSE,
+                                 simulate.p.value = FALSE, B = 2000)
+
+testChi2_Oct4_CTCF_merge_prox
+
 
 
 ####################################################################
@@ -418,678 +906,27 @@ plotDistToTSS(peakAnnoList_merge, title="Distribution of transcription factor-bi
 dev.off()
 
 
-### Get annotation data frame
-library(dplyr)
-CTCF_Oct4_annot <- as.data.frame(peakAnnoList_merge[["CTCF_Oct4"]]@anno)
-head(CTCF_Oct4_annot$distanceToTSS)
+######
+samplefiles_only_merge <- list.files("/shared/home/mnocente/macs2/merge/final/modif_final/intersection", pattern= ".narrowPeak",full.names = T)
+samplefiles_only_merge <- as.list(samplefiles_only_merge)
+names(samplefiles_only_merge) <- c("Chd8_Oct4_merge", "Chd8_TBP_Pol2_merge", "Oct4_CTCF_merge")
+print(samplefiles_only_merge)
+
+##### Get annotations #####
+peakAnnoList_only_merge <- lapply(samplefiles_only_merge, annotatePeak, TxDb=txdb, 
+                       tssRegion=c(-1000, 1000), verbose=FALSE)
+
+print(peakAnnoList_only_merge) # annotation information is stored in the peakAnnoList
 
 
-### La liste de gènes des annotations Oct4 et CTCF commun en entree pour une analyse d'enrichissement GO.
-
-## Run GO enrichment analysis 
-entrezids_CTCF_Oct4 <- CTCF_Oct4_annot$geneId %>% as.character() %>% unique()
-
-ego_CTCF_Oct4 <- enrichGO(gene = entrezids_CTCF_Oct4, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
-
-
-## Dotplot visualization
-png(file = "dotplotfunctional_enrichment_CTCF_Oct4_commun.png", width = 750, height = 1000)
-dotplot(ego_CTCF_Oct4, showCategory=50)
+##### Visualisation des annotations #####
+## Barchart (multiple samples for comparison)
+png(file = "Barchart_comparison_sample_annotation_only_samples_merges.png")
+plotAnnoBar(peakAnnoList_only_merge)
 dev.off()
 
-
-####################################################################
-#### Tables de contingence et test de Fisher ####
-####################################################################
-
-### Creation de la table de contingence pour les éléments distaux du TSS:
-## Oct4 rep1
-Oct4_rep1_avant2000 <- subset(Oct4_rep1_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-Oct4_rep1_apres2000 <- subset(Oct4_rep1_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-Oct4_rep1_distal <- rbind(Oct4_rep1_avant2000, Oct4_rep1_apres2000) 
-head(Oct4_rep1_distal)
-min(Oct4_rep1_distal$distanceToTSS)
-max(Oct4_rep1_distal$distanceToTSS)
-dim(Oct4_rep1_distal) # il y a 30814 peaks distaux du TSS (avant -2000 et apres +2000)
-dim(Oct4_rep1_annot) # il y a en tout 42848 peaks Oct4
-
-nb_peaks_Oct4_rep1_distal <- nrow(Oct4_rep1_distal) 
-nb_peaks_Oct4_rep1_distal
-
-nb_peaks_Oct4_rep1_NON_distal <- nrow(Oct4_rep1_annot) - nrow(Oct4_rep1_distal)
-nb_peaks_Oct4_rep1_NON_distal
-
-
-count_distance_data <- function(df, dist) {
-  # Recover distance information
-  min_threshold <- df$distanceToTSS < -dist;
-  max_threshold <- df$distanceToTSS >  dist;
-  distal <- min_threshold | max_threshold;
-  # Compute results
-  nb_distal <- table(distal)["TRUE"];
-  nb_non_distal <- table(distal)["FALSE"];
-  total <- length(distal);
-  # Build results object
-  results <- c(nb_distal, nb_non_distal, total);
-  names(results) <- c("nb_distal", "nb_non_distal", "total");
-  return(results)
-}
-
-Nb_peaks_Oct4_rep1_fct <- count_distance_data(Oct4_rep1_annot, 2000)
-print(Nb_peaks_Oct4_rep1_fct)
-
-
-
-
-
-## Oct4 rep2
-Oct4_rep2_avant2000 <- subset(Oct4_rep2_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-Oct4_rep2_apres2000 <- subset(Oct4_rep2_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-Oct4_rep2_distal <- rbind(Oct4_rep2_avant2000, Oct4_rep2_apres2000) 
-head(Oct4_rep2_distal)
-min(Oct4_rep2_distal$distanceToTSS)
-max(Oct4_rep2_distal$distanceToTSS)
-dim(Oct4_rep2_distal) # il y a 24358 peaks distaux du TSS (avant -2000 et apres +2000)
-dim(Oct4_rep2_annot) # il y a en tout 34111 peaks Oct4
-
-nb_peaks_Oct4_rep2_distal <- nrow(Oct4_rep2_distal) 
-nb_peaks_Oct4_rep2_distal
-
-nb_peaks_Oct4_rep2_NON_distal <- nrow(Oct4_rep2_annot) - nrow(Oct4_rep2_distal)
-nb_peaks_Oct4_rep2_NON_distal
-
-# On ajoute les réplicats:
-nb_peaks_Oct4_distal <- nb_peaks_Oct4_rep1_distal + nb_peaks_Oct4_rep2_distal
-nb_peaks_Oct4_distal
-nb_peaks_Oct4_NON_distal <- nb_peaks_Oct4_rep1_NON_distal + nb_peaks_Oct4_rep2_NON_distal
-nb_peaks_Oct4_NON_distal
-
-## CTCF
-CTCF_avant2000 <- subset(CTCF_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-CTCF_apres2000 <- subset(CTCF_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-CTCF_distal <- rbind(CTCF_avant2000, CTCF_apres2000) 
-head(CTCF_distal)
-min(CTCF_distal$distanceToTSS)
-max(CTCF_distal$distanceToTSS)
-dim(CTCF_distal) # il y a 43091 peaks distaux du TSS (avant -2000 et apres +2000)
-dim(CTCF_annot) # il y a en tout 52760 peaks CTCF
-
-nb_peaks_CTCF_distal <- nrow(CTCF_distal) 
-nb_peaks_CTCF_distal
-
-nb_peaks_CTCF_NON_distal <- nrow(CTCF_annot) - nrow(CTCF_distal)
-nb_peaks_CTCF_NON_distal
-
-
-## TBP rep1
-TBP_rep1_avant2000 <- subset(TBP_rep1_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-TBP_rep1_apres2000 <- subset(TBP_rep1_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-TBP_rep1_distal <- rbind(TBP_rep1_avant2000, TBP_rep1_apres2000) 
-head(TBP_rep1_distal)
-min(TBP_rep1_distal$distanceToTSS)
-max(TBP_rep1_distal$distanceToTSS)
-dim(TBP_rep1_distal) # il y a 32520 peaks distaux du TSS (avant -2000 et apres +2000)
-dim(TBP_rep1_annot) # il y a en tout 49448 peaks TBP
-
-nb_peaks_TBP_rep1_distal <- nrow(TBP_rep1_distal) 
-nb_peaks_TBP_rep1_distal
-
-nb_peaks_TBP_rep1_NON_distal <- nrow(TBP_rep1_annot) - nrow(TBP_rep1_distal)
-nb_peaks_TBP_rep1_NON_distal
-
-
-## TBP rep2
-TBP_rep2_avant2000 <- subset(TBP_rep2_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-TBP_rep2_apres2000 <- subset(TBP_rep2_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-TBP_rep2_distal <- rbind(TBP_rep2_avant2000, TBP_rep2_apres2000) 
-head(TBP_rep2_distal)
-min(TBP_rep2_distal$distanceToTSS)
-max(TBP_rep2_distal$distanceToTSS)
-dim(TBP_rep2_distal) # il y a 435 peaks distaux du TSS (avant -2000 et apres +2000)
-dim(TBP_rep2_annot) # il y a en tout 743 peaks TBP
-
-nb_peaks_TBP_rep2_distal <- nrow(TBP_rep2_distal) 
-nb_peaks_TBP_rep2_distal
-
-nb_peaks_TBP_rep2_NON_distal <- nrow(TBP_rep2_annot) - nrow(TBP_rep2_distal)
-nb_peaks_TBP_rep2_NON_distal
-
-
-# On ajoute les réplicats:
-nb_peaks_TBP_distal <- nb_peaks_TBP_rep1_distal + nb_peaks_TBP_rep2_distal
-nb_peaks_TBP_distal
-nb_peaks_TBP_NON_distal <- nb_peaks_TBP_rep1_NON_distal + nb_peaks_TBP_rep2_NON_distal
-nb_peaks_TBP_NON_distal
-
-
-## Pol2 rep1
-Pol2_rep1_avant2000 <- subset(Pol2_rep1_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-Pol2_rep1_apres2000 <- subset(Pol2_rep1_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-Pol2_rep1_distal <- rbind(Pol2_rep1_avant2000, Pol2_rep1_apres2000) 
-head(Pol2_rep1_distal)
-min(Pol2_rep1_distal$distanceToTSS)
-max(Pol2_rep1_distal$distanceToTSS)
-dim(Pol2_rep1_distal) # il y a 30055 peaks distaux du TSS (avant -2000 et apres +2000)
-dim(Pol2_rep1_annot) # il y a en tout 48036 peaks Pol2
-
-nb_peaks_Pol2_rep1_distal <- nrow(Pol2_rep1_distal) 
-nb_peaks_Pol2_rep1_distal
-
-nb_peaks_Pol2_rep1_NON_distal <- nrow(Pol2_rep1_annot) - nrow(Pol2_rep1_distal)
-nb_peaks_Pol2_rep1_NON_distal
-
-
-## Pol2 rep2
-Pol2_rep2_avant2000 <- subset(Pol2_rep2_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-Pol2_rep2_apres2000 <- subset(Pol2_rep2_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-Pol2_rep2_distal <- rbind(Pol2_rep2_avant2000, Pol2_rep2_apres2000) 
-head(Pol2_rep2_distal)
-min(Pol2_rep2_distal$distanceToTSS)
-max(Pol2_rep2_distal$distanceToTSS)
-dim(Pol2_rep2_distal) # il y a 3383 peaks distaux du TSS (avant -2000 et apres +2000)
-dim(Pol2_rep2_annot) # il y a en tout 11529 peaks Pol2
-
-nb_peaks_Pol2_rep2_distal <- nrow(Pol2_rep2_distal) 
-nb_peaks_Pol2_rep2_distal
-
-nb_peaks_Pol2_rep2_NON_distal <- nrow(Pol2_rep2_annot) - nrow(Pol2_rep2_distal)
-nb_peaks_Pol2_rep2_NON_distal
-
-
-# On ajoute les réplicats:
-nb_peaks_Pol2_distal <- nb_peaks_Pol2_rep1_distal + nb_peaks_Pol2_rep2_distal
-nb_peaks_Pol2_distal
-nb_peaks_Pol2_NON_distal <- nb_peaks_Pol2_rep1_NON_distal + nb_peaks_Pol2_rep2_NON_distal
-nb_peaks_Pol2_NON_distal
-
-
-## Chd8 rep1
-Chd8_rep1_avant2000 <- subset(Chd8_rep1_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-Chd8_rep1_apres2000 <- subset(Chd8_rep1_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-Chd8_rep1_distal <- rbind(Chd8_rep1_avant2000, Chd8_rep1_apres2000) 
-head(Chd8_rep1_distal)
-min(Chd8_rep1_distal$distanceToTSS)
-max(Chd8_rep1_distal$distanceToTSS)
-dim(Chd8_rep1_distal) # il y a 8957 peaks distaux du TSS (avant -2000 et apres +2000)
-dim(Chd8_rep1_annot) # il y a en tout 19942 peaks Chd8
-
-nb_peaks_Chd8_rep1_distal <- nrow(Chd8_rep1_distal) 
-nb_peaks_Chd8_rep1_distal
-
-nb_peaks_Chd8_rep1_NON_distal <- nrow(Chd8_rep1_annot) - nrow(Chd8_rep1_distal)
-nb_peaks_Chd8_rep1_NON_distal
-
-
-## Chd8 rep2
-Chd8_rep2_avant2000 <- subset(Chd8_rep2_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-Chd8_rep2_apres2000 <- subset(Chd8_rep2_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-Chd8_rep2_distal <- rbind(Chd8_rep2_avant2000, Pol2_rep2_apres2000) 
-head(Chd8_rep2_distal)
-min(Chd8_rep2_distal$distanceToTSS)
-max(Chd8_rep2_distal$distanceToTSS)
-dim(Chd8_rep2_distal) # il y a 7081 peaks distaux du TSS (avant -2000 et apres +2000)
-dim(Chd8_rep2_annot) # il y a en tout 21097 peaks Chd8
-
-nb_peaks_Chd8_rep2_distal <- nrow(Chd8_rep2_distal) 
-nb_peaks_Chd8_rep2_distal
-
-nb_peaks_Chd8_rep2_NON_distal <- nrow(Chd8_rep2_annot) - nrow(Chd8_rep2_distal)
-nb_peaks_Chd8_rep2_NON_distal
-
-
-# On ajoute les réplicats:
-nb_peaks_Chd8_distal <- nb_peaks_Chd8_rep1_distal + nb_peaks_Chd8_rep2_distal
-nb_peaks_Chd8_distal
-nb_peaks_Chd8_NON_distal <- nb_peaks_Chd8_rep1_NON_distal + nb_peaks_Chd8_rep2_NON_distal
-nb_peaks_Chd8_NON_distal
-
-
-## Table de contingence pour Oct4 pour les elements distaux:
-peaks_distaux_autres <- nb_peaks_CTCF_distal + nb_peaks_Chd8_distal + nb_peaks_TBP_distal + nb_peaks_Pol2_distal
-peaks_distaux_autres
-peaks_distaux_Oct4_vs_autres <-c(nb_peaks_Oct4_distal, peaks_distaux_autres)
-peaks_distaux_Oct4_vs_autres
-
-nb_peaks_NON_distal_autre <- nb_peaks_CTCF_NON_distal + nb_peaks_Chd8_NON_distal + nb_peaks_TBP_NON_distal + nb_peaks_Pol2_NON_distal
-nb_peaks_NON_distal_autre
-peaks_NON_distaux_Oct4_vs_autres <-c(nb_peaks_Oct4_NON_distal, nb_peaks_NON_distal_autre)
-peaks_NON_distaux_Oct4_vs_autres
-
-
-contingence_table_Oct4 <- data.frame(peaks_distaux_Oct4_vs_autres, peaks_NON_distaux_Oct4_vs_autres, stringsAsFactors = FALSE)
-contingence_table_Oct4
-
-colnames(contingence_table_Oct4) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-contingence_table_Oct4
-
-rownames(contingence_table_Oct4) <- c("Oct4", "autre")
-contingence_table_Oct4
-
-
-
-## Table de contingence pour CTCF pour les elements distaux:
-peaks_distaux_autres <- nb_peaks_Oct4_distal + nb_peaks_Chd8_distal + nb_peaks_TBP_distal + nb_peaks_Pol2_distal
-peaks_distaux_autres
-peaks_distaux_CTCF_vs_autres <-c(nb_peaks_CTCF_distal, peaks_distaux_autres)
-peaks_distaux_CTCF_vs_autres
-
-nb_peaks_NON_distal_autre <- nb_peaks_Oct4_NON_distal + nb_peaks_Chd8_NON_distal + nb_peaks_TBP_NON_distal + nb_peaks_Pol2_NON_distal
-nb_peaks_NON_distal_autre
-peaks_NON_distaux_CTCF_vs_autres <-c(nb_peaks_CTCF_NON_distal, nb_peaks_NON_distal_autre)
-peaks_NON_distaux_CTCF_vs_autres
-
-
-contingence_table_CTCF <- data.frame(peaks_distaux_CTCF_vs_autres, peaks_NON_distaux_CTCF_vs_autres, stringsAsFactors = FALSE)
-contingence_table_CTCF
-
-colnames(contingence_table_CTCF) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-contingence_table_CTCF
-
-rownames(contingence_table_CTCF) <- c("CTCF", "autre")
-contingence_table_CTCF
-
-
-## Table de contingence pour TBP pour les elements distaux:
-peaks_distaux_autres <- nb_peaks_Oct4_distal + nb_peaks_Chd8_distal + nb_peaks_CTCF_distal + nb_peaks_Pol2_distal
-peaks_distaux_autres
-peaks_distaux_TBP_vs_autres <-c(nb_peaks_TBP_distal, peaks_distaux_autres)
-peaks_distaux_TBP_vs_autres
-
-nb_peaks_NON_distal_autre <- nb_peaks_Oct4_NON_distal + nb_peaks_Chd8_NON_distal + nb_peaks_CTCF_NON_distal + nb_peaks_Pol2_NON_distal
-nb_peaks_NON_distal_autre
-peaks_NON_distaux_TBP_vs_autres <-c(nb_peaks_TBP_NON_distal, nb_peaks_NON_distal_autre)
-peaks_NON_distaux_TBP_vs_autres
-
-
-contingence_table_TBP <- data.frame(peaks_distaux_TBP_vs_autres, peaks_NON_distaux_TBP_vs_autres, stringsAsFactors = FALSE)
-contingence_table_TBP
-
-colnames(contingence_table_TBP) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-contingence_table_TBP
-
-rownames(contingence_table_TBP) <- c("TBP", "autre")
-contingence_table_TBP
-
-
-## Table de contingence pour Pol2 pour les elements distaux:
-peaks_distaux_autres <- nb_peaks_Oct4_distal + nb_peaks_Chd8_distal + nb_peaks_CTCF_distal + nb_peaks_TBP_distal
-peaks_distaux_autres
-peaks_distaux_Pol2_vs_autres <-c(nb_peaks_Pol2_distal, peaks_distaux_autres)
-peaks_distaux_Pol2_vs_autres
-
-nb_peaks_NON_distal_autre <- nb_peaks_Oct4_NON_distal + nb_peaks_Chd8_NON_distal + nb_peaks_CTCF_NON_distal + nb_peaks_TBP_NON_distal
-nb_peaks_NON_distal_autre
-peaks_NON_distaux_Pol2_vs_autres <-c(nb_peaks_Pol2_NON_distal, nb_peaks_NON_distal_autre)
-peaks_NON_distaux_Pol2_vs_autres
-
-
-contingence_table_Pol2 <- data.frame(peaks_distaux_Pol2_vs_autres, peaks_NON_distaux_Pol2_vs_autres, stringsAsFactors = FALSE)
-contingence_table_Pol2
-
-colnames(contingence_table_Pol2) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-contingence_table_Pol2
-
-rownames(contingence_table_Pol2) <- c("Pol2", "autre")
-contingence_table_Pol2
-
-
-## Table de contingence pour Chd8 pour les elements distaux:
-peaks_distaux_autres <- nb_peaks_Oct4_distal + nb_peaks_Pol2_distal + nb_peaks_CTCF_distal + nb_peaks_TBP_distal
-peaks_distaux_autres
-peaks_distaux_Chd8_vs_autres <-c(nb_peaks_Chd8_distal, peaks_distaux_autres)
-peaks_distaux_Chd8_vs_autres
-
-nb_peaks_NON_distal_autre <- nb_peaks_Oct4_NON_distal + nb_peaks_Pol2_NON_distal + nb_peaks_CTCF_NON_distal + nb_peaks_TBP_NON_distal
-nb_peaks_NON_distal_autre
-peaks_NON_distaux_Chd8_vs_autres <-c(nb_peaks_Chd8_NON_distal, nb_peaks_NON_distal_autre)
-peaks_NON_distaux_Chd8_vs_autres
-
-
-contingence_table_Chd8 <- data.frame(peaks_distaux_Chd8_vs_autres, peaks_NON_distaux_Chd8_vs_autres, stringsAsFactors = FALSE)
-contingence_table_Chd8
-
-colnames(contingence_table_Chd8) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-contingence_table_Chd8
-
-rownames(contingence_table_Chd8) <- c("Chd8", "autre")
-contingence_table_Chd8
-
-
-## Test de fisher sur la table de contingence de Oct4
-testF_Oct4 <- fisher.test(x=contingence_table_Oct4, # table de contingence
-                          y = NULL, # a factor object; ignored if x is a matrix.
-                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                          control = list(), # a list with named components for low level algorithm control.
-                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-
-testF_CTCF <- fisher.test(x=contingence_table_CTCF, # table de contingence
-                          y = NULL, # a factor object; ignored if x is a matrix.
-                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                          control = list(), # a list with named components for low level algorithm control.
-                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-testF_TBP <- fisher.test(x=contingence_table_TBP, # table de contingence
-                         y = NULL, # a factor object; ignored if x is a matrix.
-                         hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                         control = list(), # a list with named components for low level algorithm control.
-                         or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                         alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                         conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                         conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                         B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-testF_Pol2 <- fisher.test(x=contingence_table_Pol2, # table de contingence
-                          y = NULL, # a factor object; ignored if x is a matrix.
-                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                          control = list(), # a list with named components for low level algorithm control.
-                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-testF_Chd8 <- fisher.test(x=contingence_table_Chd8, # table de contingence
-                          y = NULL, # a factor object; ignored if x is a matrix.
-                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                          control = list(), # a list with named components for low level algorithm control.
-                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-testF_Chd8
-testF_Oct4
-testF_TBP
-testF_Pol2
-testF_CTCF
-
-
-#######################################################
-# Région proximale : [-400 ; +100]
-#######################################################
-
-
-### Comptage du nombre de peaks pour tous les facteurs:
-
-count_distance_data <- function(df, dist) {
-  # Recover distance information
-  min_threshold <- df$distanceToTSS >= -dist;
-  max_threshold <- df$distanceToTSS <=  dist;
-  distal <- min_threshold & max_threshold;
-  # Compute results
-  nb_distal <- table(distal)["TRUE"];
-  nb_non_distal <- table(distal)["FALSE"];
-  total <- length(distal);
-  # Build results object
-  results <- c(nb_distal, nb_non_distal, total);
-  names(results) <- c("nb_distal", "nb_non_distal", "total");
-  return(results)
-}
-
-### Oct4
-Oct4_rep1_peaks_tot_prox <- count_distance_data(Oct4_rep1_annot, 300)
-Oct4_rep1_peaks_tot_prox
-
-Oct4_rep2_peaks_tot_prox <- count_distance_data(Oct4_rep2_annot, 300)
-Oct4_rep2_peaks_tot_prox
-
-nb_peaks_Oct4_prox <- 8772 + 7217
-nb_peaks_Oct4_NON_prox <- 34076 + 26894
-
-### CTCF
-CTCF_peaks_tot_prox <- count_distance_data(CTCF_annot, 300)
-CTCF_peaks_tot_prox
-
-nb_peaks_CTCF_prox <- 4320
-nb_peaks_CTCF_NON_prox <- 48440
-
-### TBP
-TBP_rep1_peaks_tot_prox <- count_distance_data(TBP_rep1_annot, 300)
-TBP_rep1_peaks_tot_prox
-
-TBP_rep2_peaks_tot_prox <- count_distance_data(TBP_rep2_annot, 300)
-TBP_rep2_peaks_tot_prox
-
-nb_peaks_TBP_prox <- 12560 + 258
-nb_peaks_TBP_NON_prox <- 36888 + 485
-
-
-### Pol2
-Pol2_rep1_peaks_tot_prox <- count_distance_data(Pol2_rep1_annot, 300)
-Pol2_rep1_peaks_tot_prox
-
-Pol2_rep2_peaks_tot_prox <- count_distance_data(Pol2_rep2_annot, 300)
-Pol2_rep2_peaks_tot_prox
-
-nb_peaks_Pol2_prox <- 13962 + 7380
-nb_peaks_Pol2_NON_prox <- 34074 + 4149
-
-
-### Chd8
-Chd8_rep1_peaks_tot_prox <- count_distance_data(Chd8_rep1_annot, 300)
-Chd8_rep1_peaks_tot_prox
-
-Chd8_rep2_peaks_tot_prox <- count_distance_data(Chd8_rep2_annot, 300)
-Chd8_rep2_peaks_tot_prox
-
-nb_peaks_Chd8_prox <- 9844 + 8877
-nb_peaks_Chd8_NON_prox <- 10098 + 12220
-
-
-### Tables de contingence:
-
-## Table de contingence pour Oct4 pour les elements proximaux:
-peaks_prox_autres <- nb_peaks_CTCF_prox + nb_peaks_Chd8_prox + nb_peaks_TBP_prox + nb_peaks_Pol2_prox
-peaks_prox_autres
-peaks_prox_Oct4_vs_autres <-c(nb_peaks_Oct4_prox, peaks_prox_autres)
-peaks_prox_Oct4_vs_autres
-
-nb_peaks_NON_prox_autre <- nb_peaks_CTCF_NON_prox + nb_peaks_Chd8_NON_prox + nb_peaks_TBP_NON_prox + nb_peaks_Pol2_NON_prox
-nb_peaks_NON_prox_autre
-peaks_NON_prox_Oct4_vs_autres <-c(nb_peaks_Oct4_NON_prox, nb_peaks_NON_prox_autre)
-peaks_NON_prox_Oct4_vs_autres
-
-
-contingence_table_Oct4_prox <- data.frame(peaks_prox_Oct4_vs_autres, peaks_NON_prox_Oct4_vs_autres, stringsAsFactors = FALSE)
-contingence_table_Oct4_prox
-
-colnames(contingence_table_Oct4_prox) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-rownames(contingence_table_Oct4_prox) <- c("Oct4", "autre")
-contingence_table_Oct4_prox
-
-
-
-## Table de contingence pour CTCF pour les elements distaux:
-peaks_prox_autres <- nb_peaks_Oct4_prox + nb_peaks_Chd8_prox + nb_peaks_TBP_prox + nb_peaks_Pol2_prox
-peaks_prox_autres
-peaks_prox_CTCF_vs_autres <-c(nb_peaks_CTCF_prox, peaks_prox_autres)
-peaks_prox_CTCF_vs_autres
-
-nb_peaks_NON_prox_autre <- nb_peaks_Oct4_NON_prox + nb_peaks_Chd8_NON_prox + nb_peaks_TBP_NON_prox + nb_peaks_Pol2_NON_prox
-nb_peaks_NON_prox_autre
-peaks_NON_prox_CTCF_vs_autres <-c(nb_peaks_CTCF_NON_prox, nb_peaks_NON_prox_autre)
-peaks_NON_prox_CTCF_vs_autres
-
-
-contingence_table_CTCF_prox <- data.frame(peaks_prox_CTCF_vs_autres, peaks_NON_prox_CTCF_vs_autres, stringsAsFactors = FALSE)
-contingence_table_CTCF_prox
-
-colnames(contingence_table_CTCF_prox) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-rownames(contingence_table_CTCF_prox) <- c("CTCF", "autre")
-contingence_table_CTCF_prox
-
-
-## Table de contingence pour TBP pour les elements distaux:
-peaks_prox_autres <- nb_peaks_Oct4_prox + nb_peaks_Chd8_prox + nb_peaks_CTCF_prox + nb_peaks_Pol2_prox
-peaks_prox_autres
-peaks_prox_TBP_vs_autres <-c(nb_peaks_TBP_prox, peaks_prox_autres)
-peaks_prox_TBP_vs_autres
-
-nb_peaks_NON_prox_autre <- nb_peaks_Oct4_NON_prox + nb_peaks_Chd8_NON_prox + nb_peaks_CTCF_NON_prox + nb_peaks_Pol2_NON_prox
-nb_peaks_NON_prox_autre
-peaks_NON_prox_TBP_vs_autres <-c(nb_peaks_TBP_NON_prox, nb_peaks_NON_prox_autre)
-peaks_NON_prox_TBP_vs_autres
-
-
-contingence_table_TBP_prox <- data.frame(peaks_prox_TBP_vs_autres, peaks_NON_prox_TBP_vs_autres, stringsAsFactors = FALSE)
-contingence_table_TBP_prox
-
-colnames(contingence_table_TBP_prox) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-rownames(contingence_table_TBP_prox) <- c("TBP", "autre")
-contingence_table_TBP_prox
-
-
-## Table de contingence pour Pol2 pour les elements distaux:
-peaks_prox_autres <- nb_peaks_Oct4_prox + nb_peaks_Chd8_prox + nb_peaks_CTCF_prox + nb_peaks_TBP_prox
-peaks_prox_autres
-peaks_prox_Pol2_vs_autres <-c(nb_peaks_Pol2_prox, peaks_prox_autres)
-peaks_prox_Pol2_vs_autres
-
-nb_peaks_NON_prox_autre <- nb_peaks_Oct4_NON_prox + nb_peaks_Chd8_NON_prox + nb_peaks_CTCF_NON_prox + nb_peaks_TBP_NON_prox
-nb_peaks_NON_prox_autre
-peaks_NON_prox_Pol2_vs_autres <-c(nb_peaks_Pol2_NON_prox, nb_peaks_NON_prox_autre)
-peaks_NON_prox_Pol2_vs_autres
-
-
-contingence_table_Pol2_prox <- data.frame(peaks_prox_Pol2_vs_autres, peaks_NON_prox_Pol2_vs_autres, stringsAsFactors = FALSE)
-contingence_table_Pol2_prox
-
-colnames(contingence_table_Pol2_prox) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-rownames(contingence_table_Pol2_prox) <- c("Pol2", "autre")
-contingence_table_Pol2_prox
-
-
-## Table de contingence pour Chd8 pour les elements distaux:
-peaks_prox_autres <- nb_peaks_Oct4_prox + nb_peaks_Pol2_prox + nb_peaks_CTCF_prox + nb_peaks_TBP_prox
-peaks_prox_autres
-peaks_prox_Chd8_vs_autres <-c(nb_peaks_Chd8_prox, peaks_prox_autres)
-peaks_prox_Chd8_vs_autres
-
-nb_peaks_NON_prox_autre <- nb_peaks_Oct4_NON_prox + nb_peaks_Pol2_NON_prox + nb_peaks_CTCF_NON_prox + nb_peaks_TBP_NON_prox
-nb_peaks_NON_prox_autre
-peaks_NON_prox_Chd8_vs_autres <-c(nb_peaks_Chd8_NON_prox, nb_peaks_NON_prox_autre)
-peaks_NON_prox_Chd8_vs_autres
-
-
-contingence_table_Chd8_prox <- data.frame(peaks_prox_Chd8_vs_autres, peaks_NON_prox_Chd8_vs_autres, stringsAsFactors = FALSE)
-contingence_table_Chd8_prox
-
-colnames(contingence_table_Chd8_prox) <- c("Nombre_peaks_distaux", "Nombre_peaks_NON_distaux")
-rownames(contingence_table_Chd8_prox) <- c("Chd8", "autre")
-contingence_table_Chd8_prox
-
-
-## Test de fisher sur la table de contingence de Oct4
-testF_Oct4_prox <- fisher.test(x=contingence_table_Oct4_prox, # table de contingence
-                          y = NULL, # a factor object; ignored if x is a matrix.
-                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                          control = list(), # a list with named components for low level algorithm control.
-                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-
-testF_CTCF_prox <- fisher.test(x=contingence_table_CTCF_prox, # table de contingence
-                          y = NULL, # a factor object; ignored if x is a matrix.
-                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                          control = list(), # a list with named components for low level algorithm control.
-                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-testF_TBP_prox <- fisher.test(x=contingence_table_TBP_prox, # table de contingence
-                         y = NULL, # a factor object; ignored if x is a matrix.
-                         hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                         control = list(), # a list with named components for low level algorithm control.
-                         or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                         alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                         conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                         conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                         B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-testF_Pol2_prox <- fisher.test(x=contingence_table_Pol2_prox, # table de contingence
-                          y = NULL, # a factor object; ignored if x is a matrix.
-                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                          control = list(), # a list with named components for low level algorithm control.
-                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-testF_Chd8_prox <- fisher.test(x=contingence_table_Chd8_prox, # table de contingence
-                          y = NULL, # a factor object; ignored if x is a matrix.
-                          hybridPars = c(expect = 5, percent = 80, Emin = 1), # a numeric vector of length 3, by default describing “Cochran's conditions” for the validity of the chisquare approximation, see ‘Details’.
-                          control = list(), # a list with named components for low level algorithm control.
-                          or = 1, # the hypothesized odds ratio. Only used in the 2×2 case.
-                          alternative = "two.sided",  # indicates the alternative hypothesis and must be one of "two.sided", "greater" or "less". You can specify just the initial letter. Only used in the 2×2 case.
-                          conf.int = TRUE, # logical indicating if a confidence interval for the odds ratio in a 2×2 table should be computed (and returned).
-                          conf.level = 0.95, # confidence level for the returned confidence interval. Only used in the 2×2 case and if conf.int = TRUE.
-                          B = 2000) #an integer specifying the number of replicates used in the Monte Carlo test.
-
-
-testF_Chd8_prox
-testF_Oct4_prox
-testF_TBP_prox
-testF_Pol2_prox
-testF_CTCF_prox
-
-
-
-
-
-
-
-##### Writing annotations to file #####
-
-##### Pour Oct4 ######
-## Get unique entrez gene Ids (Id uniques)
-entrezids <- unique(Oct4_annot$geneId)
-
-## Get mm10 entrez to gene symbol mappings (obtenir les symboles de gene pour mm10)
-entrez2gene <- grcm38 %>% filter(entrez %in% entrezids) %>% dplyr::select(entrez, symbol)
-
-## Match to each annotation dataframe (matcher les dataframe d'annotation)
-m <- match(Oct4_annot$geneId, entrez2gene$entrez)
-Oct4_annot_modif<- cbind(Oct4_annot[,1:14], geneSymbol=entrez2gene$symbol[m], Oct4_annot[,15:16])
-
-write.table(Oct4_annot, file="./Oct4_annotation.txt", sep="\t", quote=F, row.names=F)
-
-
-##### Pour CTCF ######
-# Get unique entrez gene Ids
-entrezids <- unique(CTCF_annot$geneId)
-
-## Get mm10 entrez to gene symbol mappings #### A modifier pour la souris ####
-entrez2gene <- grcm38 %>% filter(entrez %in% entrezids) %>% dplyr::select(entrez, symbol)
-
-## Match to each annotation dataframe
-m <- match(CTCF_annot$geneId, entrez2gene$entrez)
-CTCF_annot_modif <- cbind(CTCF_annot[,1:14], geneSymbol=entrez2gene$symbol[m], CTCF_annot[,15:16])
-
-write.table(CTCF_annot_modif, file="./CTCF_annotation.txt", sep="\t", quote=F, row.names=F)
-
+## Distribution of TF-binding loci relative to TSS
+png(file = "Distribution_of_TF-binding_loci_relative_to_TSS_only_samples_merges.png")
+plotDistToTSS(peakAnnoList_only_merge, title="Distribution of transcription factor-binding loci \n relative to TSS")
+dev.off()
 
