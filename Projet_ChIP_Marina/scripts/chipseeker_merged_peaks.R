@@ -24,12 +24,24 @@ print("les libraries ont bien été chargées")
 ##### Loading des data #####
 # As input we need to provide the names of our BED files in a list format.
 # les replicats de Pol2, TBP, CHd8 et Oct4 ont été mergés. On n'avait malheureusement pas de duplicat pour CTCF donc j'ai gardé tous les peaks.
-samplefiles <- list.files("/shared/home/mnocente/macs2/merge/final/modif_final", pattern= ".narrowPeak",full.names = T)
+samplefiles <- list.files("/home/mnocente/Bureau/bed_peaks_input_chipseeker", pattern= ".bed",full.names = T)
 samplefiles <- as.list(samplefiles)
 names(samplefiles) <- c("Chd8_Oct4_merge", "Chd8", "Chd8_TBP_Pol2_merge", "Oct4", "Oct4_CTCF_merge", "Pol2", "TBP", "CTCF")
 
+samplefiles_TBP <- list.files("/home/mnocente/Bureau/", pattern= ".narrowPeak",full.names = T)
+samplefiles_TBP <- as.list(samplefiles_TBP)
+names(samplefiles_TBP) <- c("TBP_rep1")
+
 print("les fichiers ont bien été chargés")
-print(samplefiles)
+print(samplefiles_TBP)
+
+
+samplefiles_TBP_rep1_Pol2_Chd8 <- list.files("/home/mnocente/Bureau/", pattern= ".narrowPeak",full.names = T)
+samplefiles_TBP_rep1_Pol2_Chd8 <- as.list(samplefiles_TBP_rep1_Pol2_Chd8)
+names(samplefiles_TBP_rep1_Pol2_Chd8) <- c("TBP_rep1_Pol2_Chd8")
+
+print("les fichiers ont bien été chargés")
+print(samplefiles_TBP_rep1_Pol2_Chd8)
 
 ##### Assign annotation db #####
 
@@ -47,6 +59,17 @@ peakAnnoList <- lapply(samplefiles, annotatePeak, TxDb=txdb,
                        tssRegion=c(-1000, 1000), verbose=FALSE)
 
 print(peakAnnoList) # annotation information is stored in the peakAnnoList
+
+peakAnnoList_TBP <- lapply(samplefiles_TBP, annotatePeak, TxDb=txdb, 
+                       tssRegion=c(-1000, 1000), verbose=FALSE)
+
+print(peakAnnoList_TBP)
+
+
+peakAnnoList_TBP_rep1_Pol2_Chd8 <- lapply(samplefiles_TBP_rep1_Pol2_Chd8, annotatePeak, TxDb=txdb, tssRegion=c(-1000, 1000), verbose=FALSE)
+
+print(peakAnnoList_TBP_rep1_Pol2_Chd8)
+
 
 
 ##### Visualisation des annotations #####
@@ -72,6 +95,9 @@ Chd8_annot <- as.data.frame(peakAnnoList[["Chd8"]]@anno)
 Chd8_Oct4_merge_annot <- as.data.frame(peakAnnoList[["Chd8_Oct4_merge"]]@anno)
 Chd8_TBP_Pol2_merge_annot <- as.data.frame(peakAnnoList[["Chd8_TBP_Pol2_merge"]]@anno)
 Oct4_CTCF_merge_annot <- as.data.frame(peakAnnoList[["Oct4_CTCF_merge"]]@anno)
+TBP_rep1_annot <- as.data.frame(peakAnnoList_TBP[["TBP_rep1"]]@anno)
+TBP_rep1_Pol2_Chd8_annot <- as.data.frame(peakAnnoList_TBP_rep1_Pol2_Chd8[["TBP_rep1_Pol2_Chd8"]]@anno)
+
 
 # dans ce dataframe, la derniere colonne correspond à la distance au TSS.
 # Dans ces dataframes, on doit voir des colonnes correspondant au fichier BED d'entrée et des colonnes supplémentaires contenant le ou les gènes les plus proches, la distance entre le pic et le TSS du gène le plus proche, la région génomique du pic et d'autres informations. 
@@ -325,6 +351,58 @@ nb_pb_peaks_TBP_total
 # On exporte les fichiers contenant les peaks d'Oct4 distaux et proximaux
 write.table(x = TBP_distal, file = "peaks_TBP_distaux.tsv", sep = "\t")
 write.table(x = TBP_prox, file = "peaks_TBP_proximaux.tsv", sep = "\t")
+
+
+
+#### TBP_rep1
+TBP_rep1_avant2000 <- subset(TBP_rep1_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+TBP_rep1_apres2000 <- subset(TBP_rep1_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+TBP_rep1_distal <- rbind(TBP_rep1_avant2000, TBP_rep1_apres2000) 
+head(TBP_rep1_distal)
+
+TBP_rep1_prox <- subset(TBP_rep1_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+TBP_rep1_prox <- subset(TBP_rep1_prox, distanceToTSS <= 100) 
+head(TBP_rep1_prox)
+
+nb_pb_peaks_TBP_rep1_distal <- sum(TBP_rep1_distal$width)
+nb_pb_peaks_TBP_rep1_distal
+
+nb_pb_peaks_TBP_rep1_prox <- sum(TBP_rep1_prox$width)
+nb_pb_peaks_TBP_rep1_prox
+
+nb_pb_peaks_TBP_rep1_total <- sum(TBP_rep1_annot$width)
+nb_pb_peaks_TBP_rep1_total
+
+# On exporte les fichiers contenant les peaks d'Oct4 distaux et proximaux
+write.table(x = TBP_rep1_distal, file = "peaks_TBP_rep1_distaux.tsv", sep = "\t")
+write.table(x = TBP_rep1_prox, file = "peaks_TBP_rep1_proximaux.tsv", sep = "\t")
+
+
+#### TBP_rep1_Pol2_Chd8
+TBP_rep1_Pol2_Chd8_avant2000 <- subset(TBP_rep1_Pol2_Chd8_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+TBP_rep1_Pol2_Chd8_apres2000 <- subset(TBP_rep1_Pol2_Chd8_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+TBP_rep1_Pol2_Chd8_distal <- rbind(TBP_rep1_Pol2_Chd8_avant2000, TBP_rep1_Pol2_Chd8_apres2000) 
+head(TBP_rep1_Pol2_Chd8_distal)
+
+TBP_rep1_Pol2_Chd8_prox <- subset(TBP_rep1_Pol2_Chd8_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+TBP_rep1_Pol2_Chd8_prox <- subset(TBP_rep1_Pol2_Chd8_prox, distanceToTSS <= 100) 
+head(TBP_rep1_Pol2_Chd8_prox)
+
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_distal <- sum(TBP_rep1_Pol2_Chd8_distal$width)
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_distal
+
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_prox <- sum(TBP_rep1_Pol2_Chd8_prox$width)
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_prox
+
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_total <- sum(TBP_rep1_Pol2_Chd8_annot$width)
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_total
+
+# On exporte les fichiers contenant les peaks d'Oct4 distaux et proximaux
+write.table(x = TBP_rep1_Pol2_Chd8_distal, file = "peaks_TBP_rep1_Pol2_Chd8_distaux.tsv", sep = "\t")
+write.table(x = TBP_rep1_Pol2_Chd8_prox, file = "peaks_TBP_rep1_Pol2_Chd8_proximaux.tsv", sep = "\t")
+
+
+TBP_rep1_Pol2_Chd8_annot
 
 #### CTCF
 CTCF_avant2000 <- subset(CTCF_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS

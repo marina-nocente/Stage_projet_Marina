@@ -340,12 +340,23 @@ Réinstallation de conda, puis de snakemake et je relance mon Snakefile.
 
 
 
-# On merge les réplicats des fichiers de peaks avec HOMER mergePeaks
+# Etape 11 : On conserve uniquements les peaks communs entre les réplicats de mes facteurs avec HOMER mergePeaks
 
+Afin d'avoir plus confiance dans nos peaks, on garde uniquement les peaks comment entre mes 2 réplicats pour chaque facteur, sauf pour CTCF car on n'a pas de réplicat et on TBP car le réplicat 2 est très mauvais.
 
+## Exemple de ligne de commande lancée directement sur le cluster:
+
+```{bash, eval=FALSE}
 srun /mnt/beegfs/userdata/m_diop/for_homer/bin/mergePeaks -d 100 just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak just_chr_ChIPseq_Chd8_rep2_peaks.narrowPeak -venn "merge_Chd8_peaks_venn" -prefix merge
+```
 
-## On supprime la ligne commencant par # des fichiers de peaks produits par HOMER mergePeaks
+On utilise le programme mergePeaks d'HOMER.
+
+[Doc de mergePeaks (HOMER)](http://homer.ucsd.edu/homer/ngs/mergePeaks.html)
+
+
+## Opération sur les fichiers contenant les peaks communs entre mes réplicats:
+### On supprime la ligne commencant par # des fichiers de peaks produits par HOMER mergePeaks
 grep "#" -v merge_just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak_just_chr_ChIPseq_Chd8_rep2_peaks.narrowPeak > merge_modif_Chd8_peaks.narrowPeak
 
 ## On garde que les colonnes "chr", "start", "end".
@@ -355,8 +366,22 @@ cut -f 2-4 merge_modif_Chd8_peaks.narrowPeak > merge_final_Chd8_peaks.narrowPeak
 grep "#" -v merge_just_chr_ChIPseq_Chd8_rep1_peaks.narrowPeak_just_chr_ChIPseq_Chd8_rep2_peaks.narrowPeak | cut -f 2-4 > merge_final_Chd8_peaks.narrowPeak
 
 
+# Etape 12: On veut savoir si nos facteurs sont significativement présents sur 2 régions d'intérêt (test d'enrichissement)
 
-# On compte le nombre de base sous les peaks pour chaque facteur
+On a 2 régions d'intérêt:
+- tout le génome SAUF l'intervalle [-2000:+2000]
+- l'intervalle [-400:+100] autour du TSS (promoteur resséré)
+
+Voici ce qu'il faut faire :
+- compter le nombre de base sur tout le génome de mm10
+- compter le nombre de base sur ma région d'intéret
+- compter le nombre de base sous mes peaks Oct4 (un exemple de facteur d'intérêt) sur tout le génome (sous R)
+- compter le nombre de base sous mes peaks Oct4 (un exemple de facteur d'intérêt) sur la région d'intérêt (sous R)
+- construire une table de contingence (sous R)
+- Faire un test du Chi2 (sous R)
+
+
+## On compte le nombre de base sous les peaks pour chaque facteur
 awk '{SUM += $3-$2} END {print SUM}' merge_final_TBP_peaks.narrowPeak 
 
 Le nombre de bases sous TOUS les peaks pour chaque facteur:
@@ -366,7 +391,7 @@ Oct4 : 3469030 pb
 Chd8 : 1423805 pb
 CTCF : 19756243 pb
 
-# Récupérer le fichier GTF de mm10, garder uniquement les "start_codon", puis les colonnes chr, start, end puis soustraire -2000 à la colonne start et ajouter + 2000 à la colonne end.
+## Récupérer le fichier GTF de mm10, garder uniquement les "start_codon", puis les colonnes chr, start, end puis soustraire -2000 à la colonne start et ajouter + 2000 à la colonne end pour la région distale
 
 grep "start_codon" hgTables.gtf > only_start_codon_hgTables.gtf
 
@@ -376,17 +401,15 @@ awk '{print $1"\t"$2-2000"\t"$3+2000}' good_columns_only_start_codon_hgTables.gt
 
 Je vérifie sur IGV en important mon fichier .bed final et le gtf du début (comparable à ce qu'on a dans RefSeq avec des transcrits en plus).
 
+### Autre possibilité : à partir du fichier fasta du génome utilisé pour l'alignement, on masque les régions qui ne m'intéressent pas avec des Z à partir du fichier bed de mes régions "proximale" (-2000:+2000). On supprime ensuite les Z.
 
-
-# A partir du fichier fasta du génome utilisé pour l'alignement, on masque les régions qui ne m'intéressent pas avec des Z à partir du fichier bed de mes régions "proximale" (-2000:+2000). On supprime ensuite les Z.
-
-## Suppression des coordonnées négatifs, remplacé par 1.
+#### Suppression des coordonnées négatifs, remplacé par 1.
 awk '$2<0 {print $1"\t"1"\t"$3}' coordonnees_TSS2000_good_columns_only_start_codon_hgTables.bed > positif_coordonnees_TSS2000_good_columns_only_start_codon_hgTables.bed
 
-## Mask your regions with a "Z"" character
+#### Mask your regions with a "Z"" character
 bedtools maskfasta -mc Z -fi /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/raw_data/Genome_souris/GRCm38.primary_assembly.genome.fa -bed /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/raw_data/Genome_souris/coordonnees_TSS2000_good_columns_only_start_codon_hgTables.bed -fo masked.fasta
 
-## Replace the masked regions with no characters
+#### Replace the masked regions with no characters
 sed -i 's/Z//g' masked.fasta > result_distal.fasta
 
 ## Taille des régions promotrices (calculé la taille des régions promotrices en créant un fichier bed à partir du fichier gtf que tu as transformé en ajoutant ou soustrayant 2000)
@@ -403,7 +426,7 @@ awk '{SUM += $2} END {print SUM}' mm10.chrom.sizes_tri_final
 
 
 
-# Récupérer le fichier GTF de mm10, garder uniquement les "start_codon", puis les colonnes chr, start, end puis soustraire -400 à la colonne start et ajouter + 100 à la colonne end.
+## Récupérer le fichier GTF de mm10, garder uniquement les "start_codon", puis les colonnes chr, start, end puis soustraire -400 à la colonne start et ajouter + 100 à la colonne end pour la région distale
 
 awk '{print $1"\t"$2-400"\t"$3+100}' good_columns_only_start_codon_hgTables.gtf > coordonnees_TSS400100_proximale.bed
 
@@ -417,19 +440,57 @@ awk '{SUM += $2} END {print SUM}' mm10.chrom.sizes_tri_final
 
 
 
+# Etape 13 : Chercher les peaks communs à CTCF et Oct4, à TBP-Pol2-Chd8 et à Chd8-Oct4
 
-# Chercher les peaks communs à CTCF et Oct4:
+## Exemples de commande à lancer directement sur le cluster:
 srun /mnt/beegfs/userdata/m_diop/for_homer/bin/mergePeaks -d 100 merge_just_chr_ChIPseq_Oct4_rep1_peaks.narrowPeak_just_chr_ChIPseq_Oct4_rep2_peaks.narrowPeak just_chr_ChIPseq_CTCF_peaks.narrowPeak -venn "merge_Oct4_CTCF_peaks_venn" -prefix merge
 
-On obtient 3 listes :
+srun /mnt/beegfs/userdata/m_diop/for_homer/bin/mergePeaks -d 100 just_chr_ChIPseq_TBP_rep1_peaks.narrowPeak merge_Chd8_rep_rep2.narrowPeak merge_Pol2_rep1_rep2.narrowPeak -venn "merge_TBP_rep1_Pol2_Chd8_peaks_venn" -prefix merge_TBP_rep1_Pol2_Chd8
+
+
+## Explications
+On obtient 3 listes (quand on prend les peaks communs à 2 facteurs) :
 - une liste contenant que les peaks communs à CTCF et aux 2 réplicats d'Oct4 : merge_merge_just_chr_ChIPseq_Oct4_rep1_peaks.narrowPeak_just_chr_ChIPseq_Oct4_rep2_peaks.narrowPeak_just_chr_ChIPseq_CTCF_peaks.narrowPeak
 - une liste ne contenant que les peaks présents dans CTCF : merge_just_chr_ChIPseq_CTCF_peaks.narrowPeak
 - une liste ne contenant que les peaks présents dans Oct4 : merge_merge_just_chr_ChIPseq_Oct4_rep1_peaks.narrowPeak_just_chr_ChIPseq_Oct4_rep2_peaks.narrowPeak
 
+On utilise HOMER mergePeaks pour faire ça.
 
 
+# Etape 14 : Comparaison des valeurs de statistiques que j'ai obtenu avec mes tests du Chi2 et les valeurs retournées
 
-# Annotation avec HOMER et stats
+On utilise annotatePeaks avec HOMER.
+[Doc de annotatePeaks (HOMER)](http://homer.ucsd.edu/homer/ngs/annotation.html)
+
+## Récupération des listes de peaks distaux et priximaux apres traitement par ChIPseeker:
+### dans R:
+write.table(x = Oct4_distal, file = "peaks_Oct4_distaux.tsv", sep = "\t")
+
+
+### Modifs du fichier pour transformation en bed:
+
+awk '{print $2"\t"$3"\t"$4}' peaks_Oct4_distaux.tsv > peaks_Oct4_distaux.bed 
+--> affiche chr, start, end
+
+grep -v "start" peaks_Oct4_distaux.bed > peaks_Oct4_distaux_final.bed 
+--> supprime la 1ere ligne "header"
+
+sed 's/"//g' peaks_Oct4_distaux_final.bed > peaks_Oct4_distaux_final2.bed
+
+ou awk '{print $2"\t"$3"\t"$4}' peaks_Oct4_distaux.tsv | grep -v "start" | sed 's/"//g' > peaks_Oct4_distaux_final2.bed
+
+
+## PATH:
+Certains programmes sont appelés par homer de façon implicite et nécessite qu'ils soient accessibles de n'importe où. Pour ce faire on rajoute le chemin vers ces fichiers dans le PATH juste avant de lancer la commande homer, cette action peut être pérenniser en la mettant dans le bashrc également.
+Cette variable d'environnement contient tous les chemins au niveau desquels l'ordinateur va chercher un programme lorsque tu le tape directement dans le terminal.
+
+Commande :
+export PATH=/mnt/beegfs/userdata/m_diop/for_homer/bin/:$PATH
+
+
+## Annotation avec HOMER et stats des fichiers "entier"
+
+Exemples de commande:
 
 srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl merge_just_chr_ChIPseq_TBP_rep1_peaks.narrowPeak_just_chr_ChIPseq_TBP_rep2_peaks.narrowPeak mm10 -annStats stats_TBP_annot_HOMER > annotated_peaks_HOMER_TBP_merge.txt
 
@@ -437,10 +498,33 @@ srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl merge_
 
 srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl merge_Chd8_TBP_Pol2_merge_Chd8_rep_rep2.narrowPeak_merge_Pol2_rep1_rep2.narrowPeak_merge_TBP_rep1_rep2.narrowPeak mm10 -annStats ./annotated_peaks_HOMER/stats_Chd8_TBP_Pol2_annot_HOMER > ./annotated_peaks_HOMER/annotated_peaks_HOMER_Chd8_TBP_Pol2_merge.txt
 
-Dans le fichier de statistiques, on a accès à différentes stats pour les différents elements annotes: 
+Dans le fichier de statistiques d'HOMER, on a accès à différentes stats pour les différents elements annotes: 
 - log2Ratio : enrichissement (si + enrichissement positif, si - enrichissement negatif)
 - logP : log des p-values (plus c'est négatif et plus c'est significatif)
 
 
-# Détection de motifs 
+## Annotation pour les fichiers des peaks distaux et proximaux:
+srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl peaks_Chd8_distaux_final2.bed mm10 -annStats ./annotated_peaks_dist_prox/stats_annotated_HOMER_Chd8_distaux > ./annotated_peaks_dist_prox/annotated_peaks_HOMER_Chd8_distaux.txt 2> ./annotated_peaks_dist_prox/log_Chd8_distaux.txt
+
+srun --mem=10G /mnt/beegfs/userdata/m_diop/for_homer/bin/annotatePeaks.pl peaks_Chd8_proximaux_final2.bed mm10 -annStats ./annotated_peaks_dist_prox/stats_annotated_HOMER_Chd8_proximaux > ./annotated_peaks_dist_prox/annotated_peaks_HOMER_Chd8_proximaux.txt 2> ./annotated_peaks_dist_prox/log_Chd8_proximaux.txt
+
+
+# Etape 15 : Détection de motifs 
+
+On utilise findMotifsGenome pour faire de la détection de motifs.
+[Doc de findMotifsGenome (HOMER)](http://homer.ucsd.edu/homer/ngs/peakMotifs.html)
+
+## Exemples de commande à lancer directement sur le cluster pour les fichiers "entier"
+
 srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl merge_just_chr_ChIPseq_TBP_rep1_peaks.narrowPeak_just_chr_ChIPseq_TBP_rep2_peaks.narrowPeak mm10 ./motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6
+
+## Détection de motifs pour les peaks distaux et proximaux de tous les TFs et merge:
+srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl merge_just_chr_ChIPseq_TBP_rep1_peaks.narrowPeak_just_chr_ChIPseq_TBP_rep2_peaks.narrowPeak mm10 ./motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6
+
+
+## Lancement de la recherche de motifs pour tous les fichiers en parallèle sur le cluster:
+
+le & permet de récupérer la main et de passer tout de suite à la ligne suivante ou de sortir du script tout en ayant bien lancé les jobs sur le cluster.
+
+
+srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_CTCF_proximaux_final2.bed mm10 ./motifs_peaks_dist_prox/CTCF_prox_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_CTCF_proximaux.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Oct4_distaux_final2.bed mm10 ./motifs_peaks_dist_prox/Oct4_distaux_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Oct4_distaux.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Oct4_proximaux_final2.bed mm10 ./motifs_peaks_dist_prox/Oct4_prox_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Oct4_prox.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Pol2_distaux_final2.bed mm10 ./motifs_peaks_dist_prox/Pol2_distaux_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Pol2_distaux.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Pol2_proximaux_final2.bed mm10 ./motifs_peaks_dist_prox/Pol2_prox_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Pol2_prox.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_TBP_distaux_final2.bed mm10 ./motifs_peaks_dist_prox/TBP_distaux_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_TBP_distaux.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_TBP_proximaux_final2.bed mm10 ./motifs_peaks_dist_prox/TBP_prox_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_TBP_prox.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Chd8_Oct4_merge_distaux_final2.bed mm10 ./motifs_peaks_dist_prox/Chd8_Oct4_distaux_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Chd8_Oct4_merge_distaux.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Chd8_Oct4_merge_proximaux_final2.bed mm10 ./motifs_peaks_dist_prox/Chd8_Oct4_prox_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Chd8_Oct4_merge_prox.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Chd8_TBP_Pol2_merge_distaux_final2.bed mm10 ./motifs_peaks_dist_prox/Chd8_Pol2_TBP_distaux_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Chd8_TBP_Pol2_merge_distaux.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Chd8_TBP_Pol2_merge_proximaux_final2.bed mm10 ./motifs_peaks_dist_prox/Chd8_Pol2_TBP_prox_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Chd8_TBP_Pol2_merge_prox.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Oct4_CTCF_merge_distaux_final2.bed mm10 ./motifs_peaks_dist_prox/CTCF_Oct4_distaux_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Oct4_CTCF_merge_distaux.txt & srun --mem=10G --cpus-per-task=6 /mnt/beegfs/userdata/m_diop/for_homer/bin/findMotifsGenome.pl peaks_Oct4_CTCF_merge_proximaux_final2.bed mm10 ./motifs_peaks_dist_prox/CTCF_Oct4_prox_motifs -size given -preparsedDir /mnt/beegfs/userdata/m_nocente/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2/motif/preparsed/ -p 6 2> ./motifs_peaks_dist_prox/log_motifs_Oct4_CTCF_merge_prox.txt
