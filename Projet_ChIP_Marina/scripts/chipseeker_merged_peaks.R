@@ -23,25 +23,31 @@ print("les libraries ont bien été chargées")
 
 ##### Loading des data #####
 # As input we need to provide the names of our BED files in a list format.
-# les replicats de Pol2, TBP, CHd8 et Oct4 ont été mergés. On n'avait malheureusement pas de duplicat pour CTCF donc j'ai gardé tous les peaks.
-samplefiles <- list.files("/home/mnocente/Bureau/bed_peaks_input_chipseeker", pattern= ".bed",full.names = T)
-samplefiles <- as.list(samplefiles)
-names(samplefiles) <- c("Chd8_Oct4_merge", "Chd8", "Chd8_TBP_Pol2_merge", "Oct4", "Oct4_CTCF_merge", "Pol2", "TBP", "CTCF")
 
+### les replicats de Pol2, Chd8 et Oct4 ont été mergés. On n'avait malheureusement pas de duplicat pour CTCF et le réplicats 2 de TBP était très mauvais donc j'ai gardé tous les peaks pour CTCF et uniquement le réplicat 1 pour TBP. ###
+samplefiles <- list.files("/shared/home/mnocente/macs2/merge/final/modif_final", pattern= ".narrowPeak",full.names = T)
+samplefiles <- as.list(samplefiles)
+names(samplefiles) <- c("Chd8", "Oct4", "Pol2", "CTCF", "TBP_rep1")
+
+
+### TBP rep1 uniquement ###
 samplefiles_TBP <- list.files("/home/mnocente/Bureau/", pattern= ".narrowPeak",full.names = T)
 samplefiles_TBP <- as.list(samplefiles_TBP)
 names(samplefiles_TBP) <- c("TBP_rep1")
 
-print("les fichiers ont bien été chargés")
-print(samplefiles_TBP)
 
-
+### TBP_rep1_Pol2_Chd8 uniquement ###
 samplefiles_TBP_rep1_Pol2_Chd8 <- list.files("/home/mnocente/Bureau/", pattern= ".narrowPeak",full.names = T)
 samplefiles_TBP_rep1_Pol2_Chd8 <- as.list(samplefiles_TBP_rep1_Pol2_Chd8)
 names(samplefiles_TBP_rep1_Pol2_Chd8) <- c("TBP_rep1_Pol2_Chd8")
 
 print("les fichiers ont bien été chargés")
 print(samplefiles_TBP_rep1_Pol2_Chd8)
+
+### Les intersections de facteurs ###
+samplefiles_intersections <- list.files("/shared/home/mnocente/macs2/merge/final/modif_final/intersection", pattern= ".narrowPeak",full.names = T)
+samplefiles_intersections <- as.list(samplefiles_intersections)
+names(samplefiles_intersections) <- c("Chd8_Oct4_intersection", "Oct4_CTCF_intersection", "TBP_rep1_Pol2_Chd8_intersection")
 
 ##### Assign annotation db #####
 
@@ -60,43 +66,61 @@ peakAnnoList <- lapply(samplefiles, annotatePeak, TxDb=txdb,
 
 print(peakAnnoList) # annotation information is stored in the peakAnnoList
 
+#########
 peakAnnoList_TBP <- lapply(samplefiles_TBP, annotatePeak, TxDb=txdb, 
                        tssRegion=c(-1000, 1000), verbose=FALSE)
 
 print(peakAnnoList_TBP)
 
-
+#########
 peakAnnoList_TBP_rep1_Pol2_Chd8 <- lapply(samplefiles_TBP_rep1_Pol2_Chd8, annotatePeak, TxDb=txdb, tssRegion=c(-1000, 1000), verbose=FALSE)
 
 print(peakAnnoList_TBP_rep1_Pol2_Chd8)
 
+#########
+peakAnnoList_intersection <- lapply(samplefiles_intersections, annotatePeak, TxDb=txdb, tssRegion=c(-1000, 1000), verbose=FALSE)
+print(peakAnnoList_intersection)
+
 
 
 ##### Visualisation des annotations #####
-
+############## Visualisation des annotations pour les échantillons CTCF, TBP_rep1, Pol2, Chd8 et Oct4 ##############
 ## Barchart (multiple samples for comparison)
-png(file = "Barchart_comparison_sample_annotation_all_samples_merges.png")
+png(file = "Barchart_comparison_sample_annotation_samples_mergePol2_mergeChd8_mergeOct4_CTCF_TBPrep1.png")
 plotAnnoBar(peakAnnoList)
 dev.off()
 
 ## Distribution of TF-binding loci relative to TSS
-png(file = "Distribution_of_TF-binding_loci_relative_to_TSS_all_samples_merges.png")
+png(file = "Distribution_of_TF-binding_loci_relative_to_TSS_samples_mergePol2_mergeChd8_mergeOct4_CTCF_TBPrep1.png")
 plotDistToTSS(peakAnnoList, title="Distribution of transcription factor-binding loci \n relative to TSS")
 dev.off()
+
+
+############## Visualisation des annotations pour les intersections des échantillons ##############
+## Barchart (multiple samples for comparison)
+png(file = "Barchart_comparison_sample_annotation_samples_intersections.png")
+plotAnnoBar(peakAnnoList_intersection)
+dev.off()
+
+## Distribution of TF-binding loci relative to TSS
+png(file = "Distribution_of_TF-binding_loci_relative_to_TSS_samples_intersections.png")
+plotDistToTSS(peakAnnoList_intersection, title="Distribution of transcription factor-binding loci \n relative to TSS")
+dev.off()
+
 
 
 ### Get annotation data frame
 library(dplyr)
 Oct4_annot <- as.data.frame(peakAnnoList[["Oct4"]]@anno)
+TBP_rep1_annot <- as.data.frame(peakAnnoList[["TBP_rep1"]]@anno)
 TBP_annot <- as.data.frame(peakAnnoList[["TBP"]]@anno)
 CTCF_annot <- as.data.frame(peakAnnoList[["CTCF"]]@anno)
 Pol2_annot <- as.data.frame(peakAnnoList[["Pol2"]]@anno)
 Chd8_annot <- as.data.frame(peakAnnoList[["Chd8"]]@anno)
-Chd8_Oct4_merge_annot <- as.data.frame(peakAnnoList[["Chd8_Oct4_merge"]]@anno)
-Chd8_TBP_Pol2_merge_annot <- as.data.frame(peakAnnoList[["Chd8_TBP_Pol2_merge"]]@anno)
-Oct4_CTCF_merge_annot <- as.data.frame(peakAnnoList[["Oct4_CTCF_merge"]]@anno)
-TBP_rep1_annot <- as.data.frame(peakAnnoList_TBP[["TBP_rep1"]]@anno)
-TBP_rep1_Pol2_Chd8_annot <- as.data.frame(peakAnnoList_TBP_rep1_Pol2_Chd8[["TBP_rep1_Pol2_Chd8"]]@anno)
+
+Chd8_Oct4_intersection_annot <- as.data.frame(peakAnnoList_intersection[["Chd8_Oct4_intersection"]]@anno)
+TBP_rep1_Pol2_Chd8_intersection_annot <- as.data.frame(peakAnnoList_intersection[["TBP_rep1_Pol2_Chd8_intersection"]]@anno)
+Oct4_CTCF_intersection_annot <- as.data.frame(peakAnnoList_intersection[["Oct4_CTCF_intersection"]]@anno)
 
 
 # dans ce dataframe, la derniere colonne correspond à la distance au TSS.
@@ -153,17 +177,17 @@ dev.off()
 ### La liste de gènes des annotations TBP en entree pour une analyse d'enrichissement GO.
 
 ## Run GO enrichment analysis 
-entrezids_TBP <- TBP_annot$geneId %>% as.character() %>% unique()
+entrezids_TBP_rep1 <- TBP_rep1_annot$geneId %>% as.character() %>% unique()
 
-ego_TBP <- enrichGO(gene = entrezids_TBP, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
+ego_TBP_rep1 <- enrichGO(gene = entrezids_TBP_rep1, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
 
 ## Output results from GO analysis to a table
-#cluster_summary_TBP <- data.frame(ego_TBP)
-#write.csv(cluster_summary_TBP, "results/clusterProfiler_TBP.csv")
+#cluster_summary_TBP_rep1 <- data.frame(ego_TBP_rep1)
+#write.csv(cluster_summary_TBP_rep1, "results/clusterProfiler_TBP.csv")
 
 ## Dotplot visualization
-png(file = "dotplotfunctional_enrichment_TBP.png", width = 750, height = 1000)
-dotplot(ego_TBP, showCategory=20)
+png(file = "dotplotfunctional_enrichment_TBP_rep1.png", width = 750, height = 1000)
+dotplot(ego_TBP_rep1, showCategory=20)
 dev.off()
 
 
@@ -208,42 +232,42 @@ dev.off()
 ### La liste de gènes des annotations Chd8_Oct4_merge en entree pour une analyse d'enrichissement GO.
 
 ## Run GO enrichment analysis 
-entrezids_Chd8_Oct4_merge <- Chd8_Oct4_merge_annot$geneId %>% as.character() %>% unique()
+entrezids_Chd8_Oct4_intersection <- Chd8_Oct4_intersection_annot$geneId %>% as.character() %>% unique()
 
-ego_Chd8_Oct4_merge <- enrichGO(gene = entrezids_Chd8_Oct4_merge, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
+ego_Chd8_Oct4_intersection <- enrichGO(gene = entrezids_Chd8_Oct4_intersection, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
 
 
 ## Dotplot visualization
-png(file = "dotplotfunctional_enrichment_Chd8_Oct4_merge.png", width = 750, height = 1000)
-dotplot(ego_Chd8_Oct4_merge, showCategory=20)
+png(file = "dotplotfunctional_enrichment_Chd8_Oct4_intersection.png", width = 750, height = 1000)
+dotplot(ego_Chd8_Oct4_intersection, showCategory=20)
 dev.off()
 
 
-### La liste de gènes des annotations Chd8_TBP_Pol2_merge en entree pour une analyse d'enrichissement GO.
+### La liste de gènes des annotations TBP_rep1_Pol2_Chd8 en entree pour une analyse d'enrichissement GO.
 
 ## Run GO enrichment analysis 
-entrezids_Chd8_TBP_Pol2_merge <- Chd8_TBP_Pol2_merge_annot$geneId %>% as.character() %>% unique()
+entrezids_TBP_rep1_Pol2_Chd8_intersection <- TBP_rep1_Pol2_Chd8_intersection_annot$geneId %>% as.character() %>% unique()
 
-ego_Chd8_TBP_Pol2_merge <- enrichGO(gene = entrezids_Chd8_TBP_Pol2_merge, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
+ego_TBP_rep1_Pol2_Chd8_intersection <- enrichGO(gene = entrezids_TBP_rep1_Pol2_Chd8_intersection, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
 
 
 ## Dotplot visualization
-png(file = "dotplotfunctional_enrichment_Chd8_TBP_Pol2_merge.png", width = 750, height = 1000)
-dotplot(ego_Chd8_TBP_Pol2_merge, showCategory=20)
+png(file = "dotplotfunctional_enrichment_TBP_rep1_Pol2_Chd8_intersection.png", width = 750, height = 1000)
+dotplot(ego_TBP_rep1_Pol2_Chd8_intersection, showCategory=20)
 dev.off()
 
 
 ### La liste de gènes des annotations Oct4_CTCF_merge en entree pour une analyse d'enrichissement GO.
 
 ## Run GO enrichment analysis 
-entrezids_Oct4_CTCF_merge <- Oct4_CTCF_merge_annot$geneId %>% as.character() %>% unique()
+entrezids_Oct4_CTCF_intersection <- Oct4_CTCF_intersection_annot$geneId %>% as.character() %>% unique()
 
-ego_Oct4_CTCF_merge <- enrichGO(gene = entrezids_Oct4_CTCF_merge, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
+ego_Oct4_CTCF_intersection <- enrichGO(gene = entrezids_Oct4_CTCF_intersection, keyType = "ENTREZID", OrgDb = org.Mm.eg.db, ont = "BP", pAdjustMethod = "BH", qvalueCutoff = 0.05, readable = TRUE)
 
 
 ## Dotplot visualization
-png(file = "dotplotfunctional_enrichment_Oct4_CTCF_merge.png", width = 750, height = 1000)
-dotplot(ego_Oct4_CTCF_merge, showCategory=20)
+png(file = "dotplotfunctional_enrichment_Oct4_CTCF_intersection.png", width = 750, height = 1000)
+dotplot(ego_Oct4_CTCF_intersection, showCategory=20)
 dev.off()
 
 
@@ -260,18 +284,29 @@ compKEGG <- compareCluster(geneCluster = genes,
                            pvalueCutoff  = 0.05, 
                            pAdjustMethod = "BH")
 
-png(file = "KEGG_Pathway_Enrichment_Analysis_all_sample_merge.png", width = 1100, height = 1100)
+png(file = "KEGG_Pathway_Enrichment_Analysis_samples_mergePol2_mergeChd8_mergeOct4_CTCF_TBPrep1.png", width = 1100, height = 1100)
 dotplot(compKEGG, showCategory = 20, title = "KEGG_Pathway_Enrichment_Analysis")
 dev.off()
 
 
+### Intersections:
+genes_intersections = lapply(peakAnnoList_intersection, function(i) as.data.frame(i)$geneId)
+
+## Run KEGG analysis
+compKEGG_intersections <- compareCluster(geneCluster = genes_intersections, 
+                           fun = "enrichKEGG",
+                           organism = "mouse",
+                           pvalueCutoff  = 0.05, 
+                           pAdjustMethod = "BH")
+
+png(file = "KEGG_Pathway_Enrichment_Analysis_samples_intersections.png", width = 1100, height = 1100)
+dotplot(compKEGG_intersections, showCategory = 20, title = "KEGG_Pathway_Enrichment_Analysis")
+dev.off()
+
 
 #### Overlap of peaks and annotated genes ####
-png(file = "Vennplot_allTF.png", width = 500, height = 500)
-peakAnnoList_all <- c(peakAnnoList$Oct4, peakAnnoList$CTCF, peakAnnoList$Pol2, peakAnnoList$TBP, peakAnnoList$Chd8)
-names(peakAnnoList_all) <- c("Oct4", "CTCF", "Pol2", "TBP", "Chd8")
-peakAnnoList_all
-genesOverlap= lapply(peakAnnoList_all, function(i) as.data.frame(i)$geneId)
+png(file = "Vennplot_mergePol2_mergeChd8_mergeOct4_CTCF_TBPrep1.png", width = 500, height = 500)
+genesOverlap= lapply(peakAnnoList, function(i) as.data.frame(i)$geneId)
 vennplot(genesOverlap)
 dev.off()
 
@@ -284,12 +319,12 @@ vennplot(genesOverlap_Oct4_CTCF)
 dev.off()
 
 
-png(file = "Vennplot_Chd8_TBP_Pol2.png", width = 500, height = 500)
-peakAnnoList_Chd8_TBP_Pol2 <- c(peakAnnoList$Chd8, peakAnnoList$TBP, peakAnnoList$Pol2)
-names(peakAnnoList_Chd8_TBP_Pol2) <- c("Chd8", "TBP", "Pol2")
-peakAnnoList_Chd8_TBP_Pol2
-genesOverlap_Chd8_TBP_Pol2= lapply(peakAnnoList_Chd8_TBP_Pol2, function(i) as.data.frame(i)$geneId)
-vennplot(genesOverlap_Chd8_TBP_Pol2)
+png(file = "Vennplot_TBP_rep1_Pol2_Chd8.png", width = 500, height = 500)
+peakAnnoList_TBP_rep1_Pol2_Chd8 <- c(peakAnnoList$Chd8, peakAnnoList$TBP_rep1, peakAnnoList$Pol2)
+names(peakAnnoList_TBP_rep1_Pol2_Chd8) <- c("Chd8", "TBP", "Pol2")
+peakAnnoList_TBP_rep1_Pol2_Chd8
+genesOverlap_TBP_rep1_Pol2_Chd8= lapply(peakAnnoList_TBP_rep1_Pol2_Chd8, function(i) as.data.frame(i)$geneId)
+vennplot(genesOverlap_TBP_rep1_Pol2_Chd8)
 dev.off()
 
 png(file = "Vennplot_Chd8_Oct4.png", width = 500, height = 500)
@@ -324,33 +359,14 @@ nb_pb_peaks_Oct_prox
 nb_pb_peaks_Oct_total <- sum(Oct4_annot$width)
 nb_pb_peaks_Oct_total
 
+nb_pb_peaks_Oct_non_distal <- nb_pb_peaks_Oct_total - nb_pb_peaks_Oct_distal
+nb_pb_peaks_Oct_non_distal
+nb_pb_peaks_Oct_non_prox <- nb_pb_peaks_Oct_total - nb_pb_peaks_Oct_prox
+nb_pb_peaks_Oct_non_prox
+
 # On exporte les fichiers contenant les peaks d'Oct4 distaux et proximaux
 write.table(x = Oct4_distal, file = "peaks_Oct4_distaux.tsv", sep = "\t")
 write.table(x = Oct4_prox, file = "peaks_Oct4_proximaux.tsv", sep = "\t")
-
-
-#### TBP
-TBP_avant2000 <- subset(TBP_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-TBP_apres2000 <- subset(TBP_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-TBP_distal <- rbind(TBP_avant2000, TBP_apres2000) 
-head(TBP_distal)
-
-TBP_prox <- subset(TBP_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
-TBP_prox <- subset(TBP_prox, distanceToTSS <= 100) 
-head(TBP_prox)
-
-nb_pb_peaks_TBP_distal <- sum(TBP_distal$width)
-nb_pb_peaks_TBP_distal
-
-nb_pb_peaks_TBP_prox <- sum(TBP_prox$width)
-nb_pb_peaks_TBP_prox
-
-nb_pb_peaks_TBP_total <- sum(TBP_annot$width)
-nb_pb_peaks_TBP_total
-
-# On exporte les fichiers contenant les peaks d'Oct4 distaux et proximaux
-write.table(x = TBP_distal, file = "peaks_TBP_distaux.tsv", sep = "\t")
-write.table(x = TBP_prox, file = "peaks_TBP_proximaux.tsv", sep = "\t")
 
 
 
@@ -373,18 +389,23 @@ nb_pb_peaks_TBP_rep1_prox
 nb_pb_peaks_TBP_rep1_total <- sum(TBP_rep1_annot$width)
 nb_pb_peaks_TBP_rep1_total
 
+nb_pb_peaks_TBP_rep1_non_distal <- nb_pb_peaks_TBP_rep1_total - nb_pb_peaks_TBP_rep1_distal
+nb_pb_peaks_TBP_rep1_non_distal
+nb_pb_peaks_TBP_rep1_non_prox <- nb_pb_peaks_TBP_rep1_total - nb_pb_peaks_TBP_rep1_prox
+nb_pb_peaks_TBP_rep1_non_prox
+
 # On exporte les fichiers contenant les peaks d'Oct4 distaux et proximaux
 write.table(x = TBP_rep1_distal, file = "peaks_TBP_rep1_distaux.tsv", sep = "\t")
 write.table(x = TBP_rep1_prox, file = "peaks_TBP_rep1_proximaux.tsv", sep = "\t")
 
 
 #### TBP_rep1_Pol2_Chd8
-TBP_rep1_Pol2_Chd8_avant2000 <- subset(TBP_rep1_Pol2_Chd8_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-TBP_rep1_Pol2_Chd8_apres2000 <- subset(TBP_rep1_Pol2_Chd8_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+TBP_rep1_Pol2_Chd8_avant2000 <- subset(TBP_rep1_Pol2_Chd8_intersection_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+TBP_rep1_Pol2_Chd8_apres2000 <- subset(TBP_rep1_Pol2_Chd8_intersection_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
 TBP_rep1_Pol2_Chd8_distal <- rbind(TBP_rep1_Pol2_Chd8_avant2000, TBP_rep1_Pol2_Chd8_apres2000) 
 head(TBP_rep1_Pol2_Chd8_distal)
 
-TBP_rep1_Pol2_Chd8_prox <- subset(TBP_rep1_Pol2_Chd8_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+TBP_rep1_Pol2_Chd8_prox <- subset(TBP_rep1_Pol2_Chd8_intersection_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
 TBP_rep1_Pol2_Chd8_prox <- subset(TBP_rep1_Pol2_Chd8_prox, distanceToTSS <= 100) 
 head(TBP_rep1_Pol2_Chd8_prox)
 
@@ -394,15 +415,20 @@ nb_pb_peaks_TBP_rep1_Pol2_Chd8_distal
 nb_pb_peaks_TBP_rep1_Pol2_Chd8_prox <- sum(TBP_rep1_Pol2_Chd8_prox$width)
 nb_pb_peaks_TBP_rep1_Pol2_Chd8_prox
 
-nb_pb_peaks_TBP_rep1_Pol2_Chd8_total <- sum(TBP_rep1_Pol2_Chd8_annot$width)
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_total <- sum(TBP_rep1_Pol2_Chd8_intersection_annot$width)
 nb_pb_peaks_TBP_rep1_Pol2_Chd8_total
+
+
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_distal <- nb_pb_peaks_TBP_rep1_Pol2_Chd8_total - nb_pb_peaks_TBP_rep1_Pol2_Chd8_distal
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_distal
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_prox <- nb_pb_peaks_TBP_rep1_Pol2_Chd8_total - nb_pb_peaks_TBP_rep1_Pol2_Chd8_prox
+nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_prox
 
 # On exporte les fichiers contenant les peaks d'Oct4 distaux et proximaux
 write.table(x = TBP_rep1_Pol2_Chd8_distal, file = "peaks_TBP_rep1_Pol2_Chd8_distaux.tsv", sep = "\t")
 write.table(x = TBP_rep1_Pol2_Chd8_prox, file = "peaks_TBP_rep1_Pol2_Chd8_proximaux.tsv", sep = "\t")
 
 
-TBP_rep1_Pol2_Chd8_annot
 
 #### CTCF
 CTCF_avant2000 <- subset(CTCF_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
@@ -422,6 +448,12 @@ nb_pb_peaks_CTCF_prox
 
 nb_pb_peaks_CTCF_total <- sum(CTCF_annot$width)
 nb_pb_peaks_CTCF_total
+
+
+nb_pb_peaks_CTCF_non_distal <- nb_pb_peaks_CTCF_total - nb_pb_peaks_CTCF_distal
+nb_pb_peaks_CTCF_non_distal
+nb_pb_peaks_CTCF_non_prox <- nb_pb_peaks_CTCF_total - nb_pb_peaks_CTCF_prox
+nb_pb_peaks_CTCF_non_prox
 
 # On exporte les fichiers contenant les peaks de TBP distaux et proximaux
 write.table(x = CTCF_distal, file = "peaks_CTCF_distaux.tsv", sep = "\t")
@@ -447,6 +479,12 @@ nb_pb_peaks_Pol2_prox
 nb_pb_peaks_Pol2_total <- sum(Pol2_annot$width)
 nb_pb_peaks_Pol2_total
 
+
+nb_pb_peaks_Pol2_non_distal <- nb_pb_peaks_Pol2_total - nb_pb_peaks_Pol2_distal
+nb_pb_peaks_Pol2_non_distal
+nb_pb_peaks_Pol2_non_prox <- nb_pb_peaks_Pol2_total - nb_pb_peaks_Pol2_prox
+nb_pb_peaks_Pol2_non_prox
+
 # On exporte les fichiers contenant les peaks de Pol2 distaux et proximaux
 write.table(x = Pol2_distal, file = "peaks_Pol2_distaux.tsv", sep = "\t")
 write.table(x = Pol2_prox, file = "peaks_Pol2_proximaux.tsv", sep = "\t")
@@ -471,18 +509,24 @@ nb_pb_peaks_Chd8_prox
 nb_pb_peaks_Chd8_total <- sum(Chd8_annot$width)
 nb_pb_peaks_Chd8_total
 
+
+nb_pb_peaks_Chd8_non_distal <- nb_pb_peaks_Chd8_total - nb_pb_peaks_Chd8_distal
+nb_pb_peaks_Chd8_non_distal
+nb_pb_peaks_Chd8_non_prox <- nb_pb_peaks_Chd8_total - nb_pb_peaks_Chd8_prox
+nb_pb_peaks_Chd8_non_prox
+
 # On exporte les fichiers contenant les peaks de Chd8 distaux et proximaux
 write.table(x = Chd8_distal, file = "peaks_Chd8_distaux.tsv", sep = "\t")
 write.table(x = Chd8_prox, file = "peaks_Chd8_proximaux.tsv", sep = "\t")
 
 
 #### Chd8_Oct4_merge
-Chd8_Oct4_merge_avant2000 <- subset(Chd8_Oct4_merge_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-Chd8_Oct4_merge_apres2000 <- subset(Chd8_Oct4_merge_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+Chd8_Oct4_merge_avant2000 <- subset(Chd8_Oct4_intersection_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+Chd8_Oct4_merge_apres2000 <- subset(Chd8_Oct4_intersection_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
 Chd8_Oct4_merge_distal <- rbind(Chd8_Oct4_merge_avant2000, Chd8_Oct4_merge_apres2000) 
 head(Chd8_Oct4_merge_distal)
 
-Chd8_Oct4_merge_prox <- subset(Chd8_Oct4_merge_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+Chd8_Oct4_merge_prox <- subset(Chd8_Oct4_intersection_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
 Chd8_Oct4_merge_prox <- subset(Chd8_Oct4_merge_prox, distanceToTSS <= 100) 
 head(Chd8_Oct4_merge_prox)
 
@@ -492,46 +536,26 @@ nb_pb_peaks_Chd8_Oct4_merge_distal
 nb_pb_peaks_Chd8_Oct4_merge_prox <- sum(Chd8_Oct4_merge_prox$width)
 nb_pb_peaks_Chd8_Oct4_merge_prox
 
-nb_pb_peaks_Chd8_Oct4_merge_total <- sum(Chd8_Oct4_merge_annot$width)
+nb_pb_peaks_Chd8_Oct4_merge_total <- sum(Chd8_Oct4_intersection_annot$width)
 nb_pb_peaks_Chd8_Oct4_merge_total
+
+nb_pb_peaks_Chd8_Oct4_non_distal <- nb_pb_peaks_Chd8_Oct4_merge_total - nb_pb_peaks_Chd8_Oct4_merge_distal
+nb_pb_peaks_Chd8_Oct4_non_distal
+nb_pb_peaks_Chd8_Oct4_non_prox <- nb_pb_peaks_Chd8_Oct4_merge_total - nb_pb_peaks_Chd8_Oct4_merge_prox
+nb_pb_peaks_Chd8_Oct4_non_prox
 
 # On exporte les fichiers contenant les peaks de Chd8 distaux et proximaux
 write.table(x = Chd8_Oct4_merge_distal, file = "peaks_Chd8_Oct4_merge_distaux.tsv", sep = "\t")
 write.table(x = Chd8_Oct4_merge_prox, file = "peaks_Chd8_Oct4_merge_proximaux.tsv", sep = "\t")
 
 
-
-#### Chd8_TBP_Pol2_merge
-Chd8_TBP_Pol2_merge_avant2000 <- subset(Chd8_TBP_Pol2_merge_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-Chd8_TBP_Pol2_merge_apres2000 <- subset(Chd8_TBP_Pol2_merge_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
-Chd8_TBP_Pol2_merge_distal <- rbind(Chd8_TBP_Pol2_merge_avant2000, Chd8_TBP_Pol2_merge_apres2000) 
-head(Chd8_TBP_Pol2_merge_distal)
-
-Chd8_TBP_Pol2_merge_prox <- subset(Chd8_TBP_Pol2_merge_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
-Chd8_TBP_Pol2_merge_prox <- subset(Chd8_TBP_Pol2_merge_prox, distanceToTSS <= 100) 
-head(Chd8_TBP_Pol2_merge_prox)
-
-nb_pb_peaks_Chd8_TBP_Pol2_merge_distal <- sum(Chd8_TBP_Pol2_merge_distal$width)
-nb_pb_peaks_Chd8_TBP_Pol2_merge_distal
-
-nb_pb_peaks_Chd8_TBP_Pol2_merge_prox <- sum(Chd8_TBP_Pol2_merge_prox$width)
-nb_pb_peaks_Chd8_TBP_Pol2_merge_prox
-
-nb_pb_peaks_Chd8_TBP_Pol2_merge_total <- sum(Chd8_TBP_Pol2_merge_annot$width)
-nb_pb_peaks_Chd8_TBP_Pol2_merge_total
-
-# On exporte les fichiers contenant les peaks de Chd8_TBP_Pol2_merge distaux et proximaux
-write.table(x = Chd8_TBP_Pol2_merge_distal, file = "peaks_Chd8_TBP_Pol2_merge_distaux.tsv", sep = "\t")
-write.table(x = Chd8_TBP_Pol2_merge_prox, file = "peaks_Chd8_TBP_Pol2_merge_proximaux.tsv", sep = "\t")
-
-
 #### Oct4_CTCF_merge
-Oct4_CTCF_merge_avant2000 <- subset(Oct4_CTCF_merge_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
-Oct4_CTCF_merge_apres2000 <- subset(Oct4_CTCF_merge_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
+Oct4_CTCF_merge_avant2000 <- subset(Oct4_CTCF_intersection_annot, distanceToTSS <= -2000) # on garde les peaks avant -2000 pb du TSS
+Oct4_CTCF_merge_apres2000 <- subset(Oct4_CTCF_intersection_annot, distanceToTSS >= 2000) # on garde les peaks apres + 2000 pb du TSS
 Oct4_CTCF_merge_distal <- rbind(Oct4_CTCF_merge_avant2000, Oct4_CTCF_merge_apres2000) 
 head(Oct4_CTCF_merge_distal)
 
-Oct4_CTCF_merge_prox <- subset(Oct4_CTCF_merge_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
+Oct4_CTCF_merge_prox <- subset(Oct4_CTCF_intersection_annot, distanceToTSS >= -400) # on garde les peaks entre -400 pb et +100 pb autour du TSS
 Oct4_CTCF_merge_prox <- subset(Oct4_CTCF_merge_prox, distanceToTSS <= 100) 
 head(Oct4_CTCF_merge_prox)
 
@@ -541,8 +565,14 @@ nb_pb_peaks_Oct_CTCF_merge_distal
 nb_pb_peaks_Oct_CTCF_merge_prox <- sum(Oct4_CTCF_merge_prox$width)
 nb_pb_peaks_Oct_CTCF_merge_prox
 
-nb_pb_peaks_Oct_CTCF_merge_total <- sum(Oct4_CTCF_merge_annot$width)
+nb_pb_peaks_Oct_CTCF_merge_total <- sum(Oct4_CTCF_intersection_annot$width)
 nb_pb_peaks_Oct_CTCF_merge_total
+
+
+nb_pb_peaks_Oct_CTCF_non_distal <- nb_pb_peaks_Oct_CTCF_merge_total - nb_pb_peaks_Oct_CTCF_merge_distal
+nb_pb_peaks_Oct_CTCF_non_distal
+nb_pb_peaks_Oct_CTCF_non_prox <- nb_pb_peaks_Oct_CTCF_merge_total - nb_pb_peaks_Oct_CTCF_merge_prox
+nb_pb_peaks_Oct_CTCF_non_prox
 
 # On exporte les fichiers contenant les peaks d'Oct4_CTCF_merge distaux et proximaux
 write.table(x = Oct4_CTCF_merge_distal, file = "peaks_Oct4_CTCF_merge_distaux.tsv", sep = "\t")
@@ -563,19 +593,25 @@ sum(genome_annot$width)
 
 
 ############################################################################################################
-#### Tables de contingence des differents facteurs et merges ####
+#### Tables de contingence des differents facteurs et intersections ####
 #### Test du Chi2 pour tester la significativité de l'enrichissement du facteur sur la region d'interet ####
 ############################################################################################################
 nb_pb_genome_mm10 <- 2.72554e+09
+
 nb_pb_region_distale_mm10 <- 2420292007
 nb_pb_region_proximale_mm10_400 <- 38288993
 
+nb_pb_genome_sans_distale <- 2.72554e+09 - 2420292007
+nb_pb_genome_sans_proximale <- 2.72554e+09 - 38288993
+
+
 #### Oct4
 ### Oct4 au niveau distal
-nombre_pb_aux_peaks_Oct4_dist <- c(nb_pb_peaks_Oct_distal, nb_pb_peaks_Oct_total)
+nombre_pb_aux_peaks_Oct4_dist <- c(nb_pb_peaks_Oct_distal, nb_pb_peaks_Oct_non_distal)
 nombre_pb_aux_peaks_Oct4_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
 nombre_pb_sur_genome_entier_dist
+
 
 contingence_table_Oct4_dist <- data.frame(nombre_pb_aux_peaks_Oct4_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
 contingence_table_Oct4_dist
@@ -583,7 +619,7 @@ contingence_table_Oct4_dist
 colnames(contingence_table_Oct4_dist) <- c("nombre_pb_aux_peaks_Oct4", "nombre_pb_sur_genome_entier")
 contingence_table_Oct4_dist
 
-rownames(contingence_table_Oct4_dist) <- c("region_distale", "genome_complet")
+rownames(contingence_table_Oct4_dist) <- c("region_distale", "genome_complet_sans_region_distale")
 contingence_table_Oct4_dist
 
 
@@ -594,9 +630,9 @@ test_Chi2_Oct4_distal
 
 
 ### Oct4 au niveau proximal : -400 : +100
-nombre_pb_aux_peaks_Oct4_prox <- c(nb_pb_peaks_Oct_prox, nb_pb_peaks_Oct_total)
+nombre_pb_aux_peaks_Oct4_prox <- c(nb_pb_peaks_Oct_prox, nb_pb_peaks_Oct_non_prox)
 nombre_pb_aux_peaks_Oct4_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
 nombre_pb_sur_genome_entier_prox
 
 contingence_table_Oct4_prox <- data.frame(nombre_pb_aux_peaks_Oct4_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
@@ -605,7 +641,7 @@ contingence_table_Oct4_prox
 colnames(contingence_table_Oct4_prox) <- c("nombre_pb_aux_peaks_Oct4", "nombre_pb_sur_genome_entier")
 contingence_table_Oct4_prox
 
-rownames(contingence_table_Oct4_prox) <- c("region_proximale", "genome_complet")
+rownames(contingence_table_Oct4_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
 contingence_table_Oct4_prox
 
 
@@ -616,57 +652,57 @@ testChi2_Oct4_prox <- chisq.test(x = contingence_table_Oct4_prox, y = NULL, corr
 testChi2_Oct4_prox
 
 
-#### TBP
-### TBP au niveau distal
-nombre_pb_aux_peaks_TBP_dist <- c(nb_pb_peaks_TBP_distal, nb_pb_peaks_TBP_total)
-nombre_pb_aux_peaks_TBP_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+#### TBP_rep1
+### TBP_rep1 au niveau distal
+nombre_pb_aux_peaks_TBP_rep1_dist <- c(nb_pb_peaks_TBP_rep1_distal, nb_pb_peaks_TBP_rep1_non_distal)
+nombre_pb_aux_peaks_TBP_rep1_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
 nombre_pb_sur_genome_entier_dist
 
-contingence_table_TBP_dist <- data.frame(nombre_pb_aux_peaks_TBP_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
-contingence_table_TBP_dist
+contingence_table_TBP_rep1_dist <- data.frame(nombre_pb_aux_peaks_TBP_rep1_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_TBP_rep1_dist
 
-colnames(contingence_table_TBP_dist) <- c("nombre_pb_aux_peaks_TBP", "nombre_pb_sur_genome_entier")
-contingence_table_TBP_dist
+colnames(contingence_table_TBP_rep1_dist) <- c("nombre_pb_aux_peaks_TBP_rep1", "nombre_pb_sur_genome_entier")
+contingence_table_TBP_rep1_dist
 
-rownames(contingence_table_TBP_dist) <- c("region_distale", "genome_complet")
-contingence_table_TBP_dist
+rownames(contingence_table_TBP_rep1_dist) <- c("region_distale", "genome_complet_sans_region_distale")
+contingence_table_TBP_rep1_dist
 
 
-test_Chi2_TBP_distal <- chisq.test(x = contingence_table_TBP_dist, y = NULL, correct = TRUE,
+test_Chi2_TBP_rep1_distal <- chisq.test(x = contingence_table_TBP_rep1_dist, y = NULL, correct = TRUE,
                                     p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                     simulate.p.value = FALSE, B = 2000)
-test_Chi2_TBP_distal
+test_Chi2_TBP_rep1_distal
 
 
-### TBP au niveau proximal : -400 : +100
-nombre_pb_aux_peaks_TBP_prox <- c(nb_pb_peaks_TBP_prox, nb_pb_peaks_TBP_total)
-nombre_pb_aux_peaks_TBP_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+### TBP_rep1 au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_TBP_rep1_prox <- c(nb_pb_peaks_TBP_rep1_prox, nb_pb_peaks_TBP_rep1_non_prox)
+nombre_pb_aux_peaks_TBP_rep1_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
 nombre_pb_sur_genome_entier_prox
 
-contingence_table_TBP_prox <- data.frame(nombre_pb_aux_peaks_TBP_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
-contingence_table_TBP_prox
+contingence_table_TBP_rep1_prox <- data.frame(nombre_pb_aux_peaks_TBP_rep1_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_TBP_rep1_prox
 
-colnames(contingence_table_TBP_prox) <- c("nombre_pb_aux_peaks_TBP", "nombre_pb_sur_genome_entier")
-contingence_table_TBP_prox
+colnames(contingence_table_TBP_rep1_prox) <- c("nombre_pb_aux_peaks_TBP_rep1", "nombre_pb_sur_genome_entier")
+contingence_table_TBP_rep1_prox
 
-rownames(contingence_table_TBP_prox) <- c("region_proximale", "genome_complet")
-contingence_table_TBP_prox
+rownames(contingence_table_TBP_rep1_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
+contingence_table_TBP_rep1_prox
 
 
-testChi2_TBP_prox <- chisq.test(x = contingence_table_TBP_prox, y = NULL, correct = TRUE,
+testChi2_TBP_rep1_prox <- chisq.test(x = contingence_table_TBP_rep1_prox, y = NULL, correct = TRUE,
                                  p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                  simulate.p.value = FALSE, B = 2000)
 
-testChi2_TBP_prox
+testChi2_TBP_rep1_prox
 
 
 #### Pol2
 ### Pol2 au niveau distal
-nombre_pb_aux_peaks_Pol2_dist <- c(nb_pb_peaks_Pol2_distal, nb_pb_peaks_Pol2_total)
+nombre_pb_aux_peaks_Pol2_dist <- c(nb_pb_peaks_Pol2_distal, nb_pb_peaks_Pol2_non_distal)
 nombre_pb_aux_peaks_Pol2_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
 nombre_pb_sur_genome_entier_dist
 
 contingence_table_Pol2_dist <- data.frame(nombre_pb_aux_peaks_Pol2_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
@@ -675,7 +711,7 @@ contingence_table_Pol2_dist
 colnames(contingence_table_Pol2_dist) <- c("nombre_pb_aux_peaks_Pol2", "nombre_pb_sur_genome_entier")
 contingence_table_Pol2_dist
 
-rownames(contingence_table_Pol2_dist) <- c("region_distale", "genome_complet")
+rownames(contingence_table_Pol2_dist) <- c("region_distale", "genome_complet_sans_region_distale")
 contingence_table_Pol2_dist
 
 
@@ -686,9 +722,9 @@ test_Chi2_Pol2_distal
 
 
 ### Pol2 au niveau proximal : -400 : +100
-nombre_pb_aux_peaks_Pol2_prox <- c(nb_pb_peaks_Pol2_prox, nb_pb_peaks_Pol2_total)
+nombre_pb_aux_peaks_Pol2_prox <- c(nb_pb_peaks_Pol2_prox, nb_pb_peaks_Pol2_non_prox)
 nombre_pb_aux_peaks_Pol2_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
 nombre_pb_sur_genome_entier_prox
 
 contingence_table_Pol2_prox <- data.frame(nombre_pb_aux_peaks_Pol2_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
@@ -697,7 +733,7 @@ contingence_table_Pol2_prox
 colnames(contingence_table_Pol2_prox) <- c("nombre_pb_aux_peaks_Pol2", "nombre_pb_sur_genome_entier")
 contingence_table_Pol2_prox
 
-rownames(contingence_table_Pol2_prox) <- c("region_proximale", "genome_complet")
+rownames(contingence_table_Pol2_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
 contingence_table_Pol2_prox
 
 
@@ -710,9 +746,9 @@ testChi2_Pol2_prox
 
 #### CTCF
 ### CTCF au niveau distal
-nombre_pb_aux_peaks_CTCF_dist <- c(nb_pb_peaks_CTCF_distal, nb_pb_peaks_CTCF_total)
+nombre_pb_aux_peaks_CTCF_dist <- c(nb_pb_peaks_CTCF_distal, nb_pb_peaks_CTCF_non_distal)
 nombre_pb_aux_peaks_CTCF_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
 nombre_pb_sur_genome_entier_dist
 
 contingence_table_CTCF_dist <- data.frame(nombre_pb_aux_peaks_CTCF_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
@@ -721,7 +757,7 @@ contingence_table_CTCF_dist
 colnames(contingence_table_CTCF_dist) <- c("nombre_pb_aux_peaks_CTCF", "nombre_pb_sur_genome_entier")
 contingence_table_CTCF_dist
 
-rownames(contingence_table_CTCF_dist) <- c("region_distale", "genome_complet")
+rownames(contingence_table_CTCF_dist) <- c("region_distale", "genome_complet_sans_region_distale")
 contingence_table_CTCF_dist
 
 
@@ -732,9 +768,9 @@ test_Chi2_CTCF_distal
 
 
 ### CTCF au niveau proximal : -400 : +100
-nombre_pb_aux_peaks_CTCF_prox <- c(nb_pb_peaks_CTCF_prox, nb_pb_peaks_CTCF_total)
+nombre_pb_aux_peaks_CTCF_prox <- c(nb_pb_peaks_CTCF_prox, nb_pb_peaks_CTCF_non_prox)
 nombre_pb_aux_peaks_CTCF_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
 nombre_pb_sur_genome_entier_prox
 
 contingence_table_CTCF_prox <- data.frame(nombre_pb_aux_peaks_CTCF_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
@@ -743,7 +779,7 @@ contingence_table_CTCF_prox
 colnames(contingence_table_CTCF_prox) <- c("nombre_pb_aux_peaks_CTCF", "nombre_pb_sur_genome_entier")
 contingence_table_CTCF_prox
 
-rownames(contingence_table_CTCF_prox) <- c("region_proximale", "genome_complet")
+rownames(contingence_table_CTCF_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
 contingence_table_CTCF_prox
 
 
@@ -756,9 +792,9 @@ testChi2_CTCF_prox
 
 #### Chd8
 ### Chd8 au niveau distal
-nombre_pb_aux_peaks_Chd8_dist <- c(nb_pb_peaks_Chd8_distal, nb_pb_peaks_Chd8_total)
+nombre_pb_aux_peaks_Chd8_dist <- c(nb_pb_peaks_Chd8_distal, nb_pb_peaks_Chd8_non_distal)
 nombre_pb_aux_peaks_Chd8_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
 nombre_pb_sur_genome_entier_dist
 
 contingence_table_Chd8_dist <- data.frame(nombre_pb_aux_peaks_Chd8_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
@@ -767,7 +803,7 @@ contingence_table_Chd8_dist
 colnames(contingence_table_Chd8_dist) <- c("nombre_pb_aux_peaks_Chd8", "nombre_pb_sur_genome_entier")
 contingence_table_Chd8_dist
 
-rownames(contingence_table_Chd8_dist) <- c("region_distale", "genome_complet")
+rownames(contingence_table_Chd8_dist) <- c("region_distale", "genome_complet_sans_region_distale")
 contingence_table_Chd8_dist
 
 
@@ -778,9 +814,9 @@ test_Chi2_Chd8_distal
 
 
 ### Chd8 au niveau proximal : -400 : +100
-nombre_pb_aux_peaks_Chd8_prox <- c(nb_pb_peaks_Chd8_prox, nb_pb_peaks_Chd8_total)
+nombre_pb_aux_peaks_Chd8_prox <- c(nb_pb_peaks_Chd8_prox, nb_pb_peaks_Chd8_non_prox)
 nombre_pb_aux_peaks_Chd8_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
 nombre_pb_sur_genome_entier_prox
 
 contingence_table_Chd8_prox <- data.frame(nombre_pb_aux_peaks_Chd8_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
@@ -789,7 +825,7 @@ contingence_table_Chd8_prox
 colnames(contingence_table_Chd8_prox) <- c("nombre_pb_aux_peaks_Chd8", "nombre_pb_sur_genome_entier")
 contingence_table_Chd8_prox
 
-rownames(contingence_table_Chd8_prox) <- c("region_proximale", "genome_complet")
+rownames(contingence_table_Chd8_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
 contingence_table_Chd8_prox
 
 
@@ -803,208 +839,142 @@ testChi2_Chd8_prox
 
 #### Chd8_Oct4_merge
 ### Chd8_Oct4_merge au niveau distal
-nombre_pb_aux_peaks_Chd8_Oct4_merge_dist <- c(nb_pb_peaks_Chd8_Oct4_merge_distal, nb_pb_peaks_Chd8_Oct4_merge_total)
-nombre_pb_aux_peaks_Chd8_Oct4_merge_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_aux_peaks_Chd8_Oct4_dist <- c(nb_pb_peaks_Chd8_Oct4_merge_distal, nb_pb_peaks_Chd8_Oct4_non_distal)
+nombre_pb_aux_peaks_Chd8_Oct4_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
 nombre_pb_sur_genome_entier_dist
 
-contingence_table_Chd8_Oct4_merge_dist <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_merge_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
-contingence_table_Chd8_Oct4_merge_dist
+contingence_table_Chd8_Oct4_dist <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Chd8_Oct4_dist
 
-colnames(contingence_table_Chd8_Oct4_merge_dist) <- c("nombre_pb_aux_peaks_Chd8_Oct4_merge", "nombre_pb_sur_genome_entier")
-contingence_table_Chd8_Oct4_merge_dist
+colnames(contingence_table_Chd8_Oct4_dist) <- c("nombre_pb_aux_peaks_Chd8_Oct4_inter", "nombre_pb_sur_genome_entier")
+contingence_table_Chd8_Oct4_dist
 
-rownames(contingence_table_Chd8_Oct4_merge_dist) <- c("region_distale", "genome_complet")
-contingence_table_Chd8_Oct4_merge_dist
+rownames(contingence_table_Chd8_Oct4_dist) <- c("region_distale", "genome_complet_sans_region_distale")
+contingence_table_Chd8_Oct4_dist
 
 
-test_Chi2_Chd8_Oct4_merge_distal <- chisq.test(x = contingence_table_Chd8_Oct4_merge_dist, y = NULL, correct = TRUE,
+test_Chi2_Chd8_Oct4_inter_distal <- chisq.test(x = contingence_table_Chd8_Oct4_dist, y = NULL, correct = TRUE,
                                     p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                     simulate.p.value = FALSE, B = 2000)
-test_Chi2_Chd8_Oct4_merge_distal
+test_Chi2_Chd8_Oct4_inter_distal
+
+
 
 
 ### Chd8_Oct4_merge au niveau proximal : -400 : +100
-nombre_pb_aux_peaks_Chd8_Oct4_merge_prox <- c(nb_pb_peaks_Chd8_Oct4_merge_prox, nb_pb_peaks_Chd8_Oct4_merge_total)
+nombre_pb_aux_peaks_Chd8_Oct4_merge_prox <- c(nb_pb_peaks_Chd8_Oct4_merge_prox, nb_pb_peaks_Chd8_Oct4_non_prox)
 nombre_pb_aux_peaks_Chd8_Oct4_merge_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
 nombre_pb_sur_genome_entier_prox
 
-contingence_table_Chd8_Oct4_merge_prox <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
-contingence_table_Chd8_Oct4_merge_prox
+contingence_table_Chd8_Oct4_inter_prox <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Chd8_Oct4_inter_prox
 
-colnames(contingence_table_Chd8_Oct4_merge_prox) <- c("nombre_pb_aux_peaks_Chd8_Oct4_merge", "nombre_pb_sur_genome_entier")
-contingence_table_Chd8_Oct4_merge_prox
+colnames(contingence_table_Chd8_Oct4_inter_prox) <- c("nombre_pb_aux_peaks_Chd8_Oct4_merge", "nombre_pb_sur_genome_entier")
+contingence_table_Chd8_Oct4_inter_prox
 
-rownames(contingence_table_Chd8_Oct4_merge_prox) <- c("region_proximale", "genome_complet")
-contingence_table_Chd8_Oct4_merge_prox
+rownames(contingence_table_Chd8_Oct4_inter_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
+contingence_table_Chd8_Oct4_inter_prox
 
 
-testChi2_Chd8_Oct4_merge_prox <- chisq.test(x = contingence_table_Chd8_Oct4_merge_prox, y = NULL, correct = TRUE,
+testChi2_Chd8_Oct4_inter_prox <- chisq.test(x = contingence_table_Chd8_Oct4_inter_prox, y = NULL, correct = TRUE,
                                  p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                  simulate.p.value = FALSE, B = 2000)
 
-testChi2_Chd8_Oct4_merge_prox
+testChi2_Chd8_Oct4_inter_prox
 
 
-#### Chd8_TBP_Pol2_merge
-### Chd8_TBP_Pol2_merge au niveau distal
-nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_dist <- c(nb_pb_peaks_Chd8_TBP_Pol2_merge_distal, nb_pb_peaks_Chd8_TBP_Pol2_merge_total)
-nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+#### TBP_rep1_Pol2_Chd8
+### TBP_rep1_Pol2_Chd8 au niveau distal
+nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_dist <- c(nb_pb_peaks_TBP_rep1_Pol2_Chd8_distal, nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_distal)
+nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_dist
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
 nombre_pb_sur_genome_entier_dist
 
-contingence_table_Chd8_TBP_Pol2_merge_dist <- data.frame(nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
-contingence_table_Chd8_TBP_Pol2_merge_dist
+contingence_table_TBP_rep1_Pol2_Chd8_inter_dist <- data.frame(nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_TBP_rep1_Pol2_Chd8_inter_dist
 
-colnames(contingence_table_Chd8_TBP_Pol2_merge_dist) <- c("nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge", "nombre_pb_sur_genome_entier")
-contingence_table_Chd8_TBP_Pol2_merge_dist
+colnames(contingence_table_TBP_rep1_Pol2_Chd8_inter_dist) <- c("nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_inter", "nombre_pb_sur_genome_entier")
+contingence_table_TBP_rep1_Pol2_Chd8_inter_dist
 
-rownames(contingence_table_Chd8_TBP_Pol2_merge_dist) <- c("region_distale", "genome_complet")
-contingence_table_Chd8_TBP_Pol2_merge_dist
+rownames(contingence_table_TBP_rep1_Pol2_Chd8_inter_dist) <- c("region_distale", "genome_complet_sans_region_distale")
+contingence_table_TBP_rep1_Pol2_Chd8_inter_dist
 
 
-test_Chi2_Chd8_TBP_Pol2_merge_distal <- chisq.test(x = contingence_table_Chd8_TBP_Pol2_merge_dist, y = NULL, correct = TRUE,
+test_Chi2_TBP_rep1_Pol2_Chd8_inter_distal <- chisq.test(x = contingence_table_TBP_rep1_Pol2_Chd8_inter_dist, y = NULL, correct = TRUE,
                                     p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                     simulate.p.value = FALSE, B = 2000)
-test_Chi2_Chd8_TBP_Pol2_merge_distal
+test_Chi2_TBP_rep1_Pol2_Chd8_inter_distal
 
 
-### Chd8_TBP_Pol2_merge au niveau proximal : -400 : +100
-nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_prox <- c(nb_pb_peaks_Chd8_TBP_Pol2_merge_prox, nb_pb_peaks_Chd8_TBP_Pol2_merge_total)
-nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+### TBP_rep1_Pol2_Chd8 au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_prox <- c(nb_pb_peaks_TBP_rep1_Pol2_Chd8_prox, nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_prox)
+nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_prox
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
 nombre_pb_sur_genome_entier_prox
 
-contingence_table_Chd8_TBP_Pol2_merge_prox <- data.frame(nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
-contingence_table_Chd8_TBP_Pol2_merge_prox
+contingence_table_TBP_rep1_Pol2_Chd8_inter_prox <- data.frame(nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_TBP_rep1_Pol2_Chd8_inter_prox
 
-colnames(contingence_table_Chd8_TBP_Pol2_merge_prox) <- c("nombre_pb_aux_peaks_Chd8_TBP_Pol2_merge", "nombre_pb_sur_genome_entier")
-contingence_table_Chd8_TBP_Pol2_merge_prox
+colnames(contingence_table_TBP_rep1_Pol2_Chd8_inter_prox) <- c("nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_inter", "nombre_pb_sur_genome_entier")
+contingence_table_TBP_rep1_Pol2_Chd8_inter_prox
 
-rownames(contingence_table_Chd8_TBP_Pol2_merge_prox) <- c("region_proximale", "genome_complet")
-contingence_table_Chd8_TBP_Pol2_merge_prox
+rownames(contingence_table_TBP_rep1_Pol2_Chd8_inter_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
+contingence_table_TBP_rep1_Pol2_Chd8_inter_prox
 
 
-testChi2_Chd8_TBP_Pol2_merge_prox <- chisq.test(x = contingence_table_Chd8_TBP_Pol2_merge_prox, y = NULL, correct = TRUE,
+testChi2_TBP_rep1_Pol2_Chd8_inter_prox <- chisq.test(x = contingence_table_TBP_rep1_Pol2_Chd8_inter_prox, y = NULL, correct = TRUE,
                                  p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                  simulate.p.value = FALSE, B = 2000)
 
-testChi2_Chd8_TBP_Pol2_merge_prox
+testChi2_TBP_rep1_Pol2_Chd8_inter_prox
 
 
 
-#### Oct4_CTCF_merge
-### Oct4_CTCF_merge au niveau distal
-nombre_pb_aux_peaks_Oct4_CTCF_merge_dist <- c(nb_pb_peaks_Oct_CTCF_merge_distal, nb_pb_peaks_Oct_CTCF_merge_total)
+#### Oct4_CTCF_inter
+### Oct4_CTCF_inter au niveau distal
+nombre_pb_aux_peaks_Oct4_CTCF_merge_dist <- c(nb_pb_peaks_Oct_CTCF_merge_distal, nb_pb_peaks_Oct_CTCF_non_distal)
 nombre_pb_aux_peaks_Oct4_CTCF_merge_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
 nombre_pb_sur_genome_entier_dist
 
-contingence_table_Oct4_CTCF_merge_dist <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
-contingence_table_Oct4_CTCF_merge_dist
+contingence_table_Oct4_CTCF_inter_dist <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Oct4_CTCF_inter_dist
 
-colnames(contingence_table_Oct4_CTCF_merge_dist) <- c("nombre_pb_aux_peaks_Oct4_CTCF_merge", "nombre_pb_sur_genome_entier")
-contingence_table_Oct4_CTCF_merge_dist
+colnames(contingence_table_Oct4_CTCF_inter_dist) <- c("nombre_pb_aux_peaks_Oct4_CTCF_inter", "nombre_pb_sur_genome_entier")
+contingence_table_Oct4_CTCF_inter_dist
 
-rownames(contingence_table_Oct4_CTCF_merge_dist) <- c("region_distale", "genome_complet")
-contingence_table_Oct4_CTCF_merge_dist
+rownames(contingence_table_Oct4_CTCF_inter_dist) <- c("region_distale", "genome_complet_sans_region_distale")
+contingence_table_Oct4_CTCF_inter_dist
 
 
-test_Chi2_Oct4_CTCF_merge_distal <- chisq.test(x = contingence_table_Oct4_CTCF_merge_dist, y = NULL, correct = TRUE,
+test_Chi2_Oct4_CTCF_inter_distal <- chisq.test(x = contingence_table_Oct4_CTCF_inter_dist, y = NULL, correct = TRUE,
                                     p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                     simulate.p.value = FALSE, B = 2000)
-test_Chi2_Oct4_CTCF_merge_distal
+test_Chi2_Oct4_CTCF_inter_distal
 
 
-### Oct4_CTCF_merge au niveau proximal : -400 : +100
-nombre_pb_aux_peaks_Oct4_CTCF_merge_prox <- c(nb_pb_peaks_Oct_CTCF_merge_prox, nb_pb_peaks_Oct_CTCF_merge_total)
+### Oct4_CTCF_inter au niveau proximal : -400 : +100
+nombre_pb_aux_peaks_Oct4_CTCF_merge_prox <- c(nb_pb_peaks_Oct_CTCF_merge_prox, nb_pb_peaks_Oct_CTCF_non_prox)
 nombre_pb_aux_peaks_Oct4_CTCF_merge_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_mm10)
+nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
 nombre_pb_sur_genome_entier_prox
 
-contingence_table_Oct4_CTCF_merge_prox <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
-contingence_table_Oct4_CTCF_merge_prox
+contingence_table_Oct4_CTCF_inter_prox <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Oct4_CTCF_inter_prox
 
-colnames(contingence_table_Oct4_CTCF_merge_prox) <- c("nombre_pb_aux_peaks_Oct4_CTCF_merge", "nombre_pb_sur_genome_entier")
-contingence_table_Oct4_CTCF_merge_prox
+colnames(contingence_table_Oct4_CTCF_inter_prox) <- c("nombre_pb_aux_peaks_Oct4_CTCF_inter", "nombre_pb_sur_genome_entier")
+contingence_table_Oct4_CTCF_inter_prox
 
-rownames(contingence_table_Oct4_CTCF_merge_prox) <- c("region_proximale", "genome_complet")
-contingence_table_Oct4_CTCF_merge_prox
+rownames(contingence_table_Oct4_CTCF_inter_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
+contingence_table_Oct4_CTCF_inter_prox
 
 
-testChi2_Oct4_CTCF_merge_prox <- chisq.test(x = contingence_table_Oct4_CTCF_merge_prox, y = NULL, correct = TRUE,
+testChi2_Oct4_CTCF_inter_prox <- chisq.test(x = contingence_table_Oct4_CTCF_inter_prox, y = NULL, correct = TRUE,
                                  p = rep(1/length(x), length(x)), rescale.p = FALSE,
                                  simulate.p.value = FALSE, B = 2000)
 
-testChi2_Oct4_CTCF_merge_prox
+testChi2_Oct4_CTCF_inter_prox
 
-
-
-####################################################################
-#### Peaks communs Oct4_CTCF ####
-####################################################################
-##### Loading des data #####
-# As input we need to provide the names of our BED files in a list format.
-# les replicats de Oct4 ont été mergés puis avec CTCF. On regarde les peaks communs à CTCF et Oct4.
-samplefiles_merge <- list.files("/home/mnocente/Bureau/Stage_projet_Marina/Projet_ChIP_Marina/results/macs2_peaks/merge/final/CTCF_Oct4", pattern= ".narrowPeak",full.names = T)
-samplefiles_merge <- as.list(samplefiles_merge)
-names(samplefiles_merge) <- c("CTCF_Oct4")
-
-print(samplefiles_merge)
-
-##### Assign annotation db #####
-
-# We need to assign annotation databases generated from UCSC to a variable:
-
-txdb <- TxDb.Mmusculus.UCSC.mm10.knownGene
-print("les annotations ont bien été chargés")
-
-# ChIPseeker et sa fonction annotatePeak permettent d'annoter les pics avec le gène et la région génomique les plus proches de là où se trouve le pic.
-# The annotatePeak function by default uses the TSS method, and provides parameters to specify a max distance cutoff.
-
-
-##### Get annotations #####
-peakAnnoList_merge <- lapply(samplefiles_merge, annotatePeak, TxDb=txdb, 
-                       tssRegion=c(-1000, 1000), verbose=FALSE)
-
-print(peakAnnoList_merge) # annotation information is stored in the peakAnnoList_merge
-
-
-##### Visualisation des annotations #####
-
-## Barchart (multiple samples for comparison)
-png(file = "Barchart_comparison_sample_annotation_CTCF_Oct4_commun.png")
-plotAnnoBar(peakAnnoList_merge)
-dev.off()
-
-## Distribution of TF-binding loci relative to TSS
-png(file = "Distribution_of_TF-binding_loci_relative_to_TSS_CTCF_Oct4_commun.png")
-plotDistToTSS(peakAnnoList_merge, title="Distribution of transcription factor-binding loci \n relative to TSS")
-dev.off()
-
-
-######
-samplefiles_only_merge <- list.files("/shared/home/mnocente/macs2/merge/final/modif_final/intersection", pattern= ".narrowPeak",full.names = T)
-samplefiles_only_merge <- as.list(samplefiles_only_merge)
-names(samplefiles_only_merge) <- c("Chd8_Oct4_merge", "Chd8_TBP_Pol2_merge", "Oct4_CTCF_merge")
-print(samplefiles_only_merge)
-
-##### Get annotations #####
-peakAnnoList_only_merge <- lapply(samplefiles_only_merge, annotatePeak, TxDb=txdb, 
-                       tssRegion=c(-1000, 1000), verbose=FALSE)
-
-print(peakAnnoList_only_merge) # annotation information is stored in the peakAnnoList
-
-
-##### Visualisation des annotations #####
-## Barchart (multiple samples for comparison)
-png(file = "Barchart_comparison_sample_annotation_only_samples_merges.png")
-plotAnnoBar(peakAnnoList_only_merge)
-dev.off()
-
-## Distribution of TF-binding loci relative to TSS
-png(file = "Distribution_of_TF-binding_loci_relative_to_TSS_only_samples_merges.png")
-plotDistToTSS(peakAnnoList_only_merge, title="Distribution of transcription factor-binding loci \n relative to TSS")
-dev.off()
 
