@@ -607,16 +607,23 @@ nb_pb_genome_sans_proximale <- 2.72554e+09 - 38288993
 
 #### Oct4
 ### Oct4 au niveau distal
+
+nb_pb_hors_peaks_oct4_distal <- nb_pb_region_distale_mm10 - nb_pb_peaks_Oct_distal
+nb_pb_hors_peaks_oct4_distal
+nb_pb_hors_peaks_oct4_NON_distal <- nb_pb_genome_sans_distale - nb_pb_peaks_Oct_non_distal
+nb_pb_hors_peaks_oct4_NON_distal
+
+
 nombre_pb_aux_peaks_Oct4_dist <- c(nb_pb_peaks_Oct_distal, nb_pb_peaks_Oct_non_distal)
 nombre_pb_aux_peaks_Oct4_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
-nombre_pb_sur_genome_entier_dist
+nombre_pb_hors_peaks_Oct4_distal <- c(nb_pb_hors_peaks_oct4_distal, nb_pb_hors_peaks_oct4_NON_distal)
+nombre_pb_hors_peaks_Oct4_distal
 
 
-contingence_table_Oct4_dist <- data.frame(nombre_pb_aux_peaks_Oct4_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Oct4_dist <- data.frame(nombre_pb_aux_peaks_Oct4_dist, nombre_pb_hors_peaks_Oct4_distal, stringsAsFactors = FALSE)
 contingence_table_Oct4_dist
 
-colnames(contingence_table_Oct4_dist) <- c("nombre_pb_aux_peaks_Oct4", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Oct4_dist) <- c("nombre_pb_aux_peaks_Oct4", "nombre_pb_hors_des_peaks")
 contingence_table_Oct4_dist
 
 rownames(contingence_table_Oct4_dist) <- c("region_distale", "genome_complet_sans_region_distale")
@@ -630,15 +637,22 @@ test_Chi2_Oct4_distal
 
 
 ### Oct4 au niveau proximal : -400 : +100
+
+nb_pb_hors_peaks_oct4_proximal <- nb_pb_region_proximale_mm10_400 - nb_pb_peaks_Oct_prox
+nb_pb_hors_peaks_oct4_proximal
+nb_pb_hors_peaks_oct4_NON_proximal <- nb_pb_genome_sans_proximale - nb_pb_peaks_Oct_non_prox
+nb_pb_hors_peaks_oct4_NON_proximal
+
+
 nombre_pb_aux_peaks_Oct4_prox <- c(nb_pb_peaks_Oct_prox, nb_pb_peaks_Oct_non_prox)
 nombre_pb_aux_peaks_Oct4_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
-nombre_pb_sur_genome_entier_prox
+nombre_pb_hors_peaks_Oct4_prox <- c(nb_pb_hors_peaks_oct4_proximal, nb_pb_hors_peaks_oct4_NON_proximal)
+nombre_pb_hors_peaks_Oct4_prox
 
-contingence_table_Oct4_prox <- data.frame(nombre_pb_aux_peaks_Oct4_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Oct4_prox <- data.frame(nombre_pb_aux_peaks_Oct4_prox, nombre_pb_hors_peaks_Oct4_prox, stringsAsFactors = FALSE)
 contingence_table_Oct4_prox
 
-colnames(contingence_table_Oct4_prox) <- c("nombre_pb_aux_peaks_Oct4", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Oct4_prox) <- c("nombre_pb_aux_peaks_Oct4", "nombre_pb_hors_des_peaks")
 contingence_table_Oct4_prox
 
 rownames(contingence_table_Oct4_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
@@ -654,15 +668,21 @@ testChi2_Oct4_prox
 
 #### TBP_rep1
 ### TBP_rep1 au niveau distal
+nb_pb_hors_peaks_TBP_rep1_distal <- nb_pb_region_distale_mm10 - nb_pb_peaks_TBP_rep1_distal
+nb_pb_hors_peaks_TBP_rep1_distal
+nb_pb_hors_peaks_TBP_rep1_NON_distal <- nb_pb_genome_sans_distale - nb_pb_peaks_TBP_rep1_non_distal
+nb_pb_hors_peaks_TBP_rep1_NON_distal
+
 nombre_pb_aux_peaks_TBP_rep1_dist <- c(nb_pb_peaks_TBP_rep1_distal, nb_pb_peaks_TBP_rep1_non_distal)
 nombre_pb_aux_peaks_TBP_rep1_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
-nombre_pb_sur_genome_entier_dist
+nombre_pb_hors_peaks_TBP_rep1_dist <- c(nb_pb_hors_peaks_TBP_rep1_distal, nb_pb_hors_peaks_TBP_rep1_NON_distal)
+nombre_pb_hors_peaks_TBP_rep1_dist
 
-contingence_table_TBP_rep1_dist <- data.frame(nombre_pb_aux_peaks_TBP_rep1_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+
+contingence_table_TBP_rep1_dist <- data.frame(nombre_pb_aux_peaks_TBP_rep1_dist, nombre_pb_hors_peaks_TBP_rep1_dist, stringsAsFactors = FALSE)
 contingence_table_TBP_rep1_dist
 
-colnames(contingence_table_TBP_rep1_dist) <- c("nombre_pb_aux_peaks_TBP_rep1", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_TBP_rep1_dist) <- c("nombre_pb_aux_peaks_TBP_rep1", "nombre_pb_hors_des_peaks")
 contingence_table_TBP_rep1_dist
 
 rownames(contingence_table_TBP_rep1_dist) <- c("region_distale", "genome_complet_sans_region_distale")
@@ -676,15 +696,20 @@ test_Chi2_TBP_rep1_distal
 
 
 ### TBP_rep1 au niveau proximal : -400 : +100
+nb_pb_hors_peaks_TBP_rep1_prox <- nb_pb_region_proximale_mm10_400 - nb_pb_peaks_TBP_rep1_prox
+nb_pb_hors_peaks_TBP_rep1_prox
+nb_pb_hors_peaks_TBP_rep1_NON_prox <- nb_pb_genome_sans_proximale - nb_pb_peaks_TBP_rep1_non_prox
+nb_pb_hors_peaks_TBP_rep1_NON_prox
+
 nombre_pb_aux_peaks_TBP_rep1_prox <- c(nb_pb_peaks_TBP_rep1_prox, nb_pb_peaks_TBP_rep1_non_prox)
 nombre_pb_aux_peaks_TBP_rep1_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
-nombre_pb_sur_genome_entier_prox
+nombre_pb_hors_peaks_TBP_rep1_prox <- c(nb_pb_hors_peaks_TBP_rep1_prox, nb_pb_hors_peaks_TBP_rep1_NON_prox)
+nombre_pb_hors_peaks_TBP_rep1_prox
 
-contingence_table_TBP_rep1_prox <- data.frame(nombre_pb_aux_peaks_TBP_rep1_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_TBP_rep1_prox <- data.frame(nombre_pb_aux_peaks_TBP_rep1_prox, nombre_pb_hors_peaks_TBP_rep1_prox, stringsAsFactors = FALSE)
 contingence_table_TBP_rep1_prox
 
-colnames(contingence_table_TBP_rep1_prox) <- c("nombre_pb_aux_peaks_TBP_rep1", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_TBP_rep1_prox) <- c("nombre_pb_aux_peaks_TBP_rep1", "nombre_pb_hors_des_peaks")
 contingence_table_TBP_rep1_prox
 
 rownames(contingence_table_TBP_rep1_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
@@ -700,15 +725,20 @@ testChi2_TBP_rep1_prox
 
 #### Pol2
 ### Pol2 au niveau distal
+nb_pb_hors_peaks_Pol2_distal <- nb_pb_region_distale_mm10 - nb_pb_peaks_Pol2_distal
+nb_pb_hors_peaks_Pol2_distal
+nb_pb_hors_peaks_Pol2_NON_distal <- nb_pb_genome_sans_distale - nb_pb_peaks_Pol2_non_distal
+nb_pb_hors_peaks_Pol2_NON_distal
+
 nombre_pb_aux_peaks_Pol2_dist <- c(nb_pb_peaks_Pol2_distal, nb_pb_peaks_Pol2_non_distal)
 nombre_pb_aux_peaks_Pol2_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
-nombre_pb_sur_genome_entier_dist
+nombre_pb_hors_peaks_Pol2_dist <- c(nb_pb_hors_peaks_Pol2_distal, nb_pb_hors_peaks_Pol2_NON_distal)
+nombre_pb_hors_peaks_Pol2_dist
 
-contingence_table_Pol2_dist <- data.frame(nombre_pb_aux_peaks_Pol2_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Pol2_dist <- data.frame(nombre_pb_aux_peaks_Pol2_dist, nombre_pb_hors_peaks_Pol2_dist, stringsAsFactors = FALSE)
 contingence_table_Pol2_dist
 
-colnames(contingence_table_Pol2_dist) <- c("nombre_pb_aux_peaks_Pol2", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Pol2_dist) <- c("nombre_pb_aux_peaks_Pol2", "nombre_pb_hors_des_peaks")
 contingence_table_Pol2_dist
 
 rownames(contingence_table_Pol2_dist) <- c("region_distale", "genome_complet_sans_region_distale")
@@ -722,15 +752,20 @@ test_Chi2_Pol2_distal
 
 
 ### Pol2 au niveau proximal : -400 : +100
+nb_pb_hors_peaks_Pol2_prox <- nb_pb_region_proximale_mm10_400 - nb_pb_peaks_Pol2_prox
+nb_pb_hors_peaks_Pol2_prox
+nb_pb_hors_peaks_Pol2_NON_prox <- nb_pb_genome_sans_proximale - nb_pb_peaks_Pol2_non_prox
+nb_pb_hors_peaks_Pol2_NON_prox
+
 nombre_pb_aux_peaks_Pol2_prox <- c(nb_pb_peaks_Pol2_prox, nb_pb_peaks_Pol2_non_prox)
 nombre_pb_aux_peaks_Pol2_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
-nombre_pb_sur_genome_entier_prox
+nombre_pb_hors_peaks_Pol2_prox <- c(nb_pb_hors_peaks_Pol2_prox, nb_pb_hors_peaks_Pol2_NON_prox)
+nombre_pb_hors_peaks_Pol2_prox
 
-contingence_table_Pol2_prox <- data.frame(nombre_pb_aux_peaks_Pol2_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Pol2_prox <- data.frame(nombre_pb_aux_peaks_Pol2_prox, nombre_pb_hors_peaks_Pol2_prox, stringsAsFactors = FALSE)
 contingence_table_Pol2_prox
 
-colnames(contingence_table_Pol2_prox) <- c("nombre_pb_aux_peaks_Pol2", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Pol2_prox) <- c("nombre_pb_aux_peaks_Pol2", "nombre_pb_hors_des_peaks")
 contingence_table_Pol2_prox
 
 rownames(contingence_table_Pol2_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
@@ -746,15 +781,20 @@ testChi2_Pol2_prox
 
 #### CTCF
 ### CTCF au niveau distal
+nb_pb_hors_peaks_CTCF_distal <- nb_pb_region_distale_mm10 - nb_pb_peaks_CTCF_distal
+nb_pb_hors_peaks_CTCF_distal
+nb_pb_hors_peaks_CTCF_NON_distal <- nb_pb_genome_sans_distale - nb_pb_peaks_CTCF_non_distal
+nb_pb_hors_peaks_CTCF_NON_distal
+
 nombre_pb_aux_peaks_CTCF_dist <- c(nb_pb_peaks_CTCF_distal, nb_pb_peaks_CTCF_non_distal)
 nombre_pb_aux_peaks_CTCF_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
-nombre_pb_sur_genome_entier_dist
+nombre_pb_hors_peaks_Pol2_dist <- c(nb_pb_hors_peaks_CTCF_distal, nb_pb_hors_peaks_CTCF_NON_distal)
+nombre_pb_hors_peaks_Pol2_dist
 
-contingence_table_CTCF_dist <- data.frame(nombre_pb_aux_peaks_CTCF_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_CTCF_dist <- data.frame(nombre_pb_aux_peaks_CTCF_dist, nombre_pb_hors_peaks_Pol2_dist, stringsAsFactors = FALSE)
 contingence_table_CTCF_dist
 
-colnames(contingence_table_CTCF_dist) <- c("nombre_pb_aux_peaks_CTCF", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_CTCF_dist) <- c("nombre_pb_aux_peaks_CTCF", "nombre_pb_hors_des_peaks")
 contingence_table_CTCF_dist
 
 rownames(contingence_table_CTCF_dist) <- c("region_distale", "genome_complet_sans_region_distale")
@@ -768,15 +808,20 @@ test_Chi2_CTCF_distal
 
 
 ### CTCF au niveau proximal : -400 : +100
+nb_pb_hors_peaks_CTCF_prox <- nb_pb_region_proximale_mm10_400 - nb_pb_peaks_CTCF_prox
+nb_pb_hors_peaks_CTCF_prox
+nb_pb_hors_peaks_CTCF_NON_prox <- nb_pb_genome_sans_proximale - nb_pb_peaks_CTCF_non_prox
+nb_pb_hors_peaks_CTCF_NON_prox
+
 nombre_pb_aux_peaks_CTCF_prox <- c(nb_pb_peaks_CTCF_prox, nb_pb_peaks_CTCF_non_prox)
 nombre_pb_aux_peaks_CTCF_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
-nombre_pb_sur_genome_entier_prox
+nombre_pb_hors_peaks_CTCF_prox <- c(nb_pb_hors_peaks_CTCF_prox, nb_pb_hors_peaks_CTCF_NON_prox)
+nombre_pb_hors_peaks_CTCF_prox
 
-contingence_table_CTCF_prox <- data.frame(nombre_pb_aux_peaks_CTCF_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_CTCF_prox <- data.frame(nombre_pb_aux_peaks_CTCF_prox, nombre_pb_hors_peaks_CTCF_prox, stringsAsFactors = FALSE)
 contingence_table_CTCF_prox
 
-colnames(contingence_table_CTCF_prox) <- c("nombre_pb_aux_peaks_CTCF", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_CTCF_prox) <- c("nombre_pb_aux_peaks_CTCF", "nombre_pb_hors_des_peaks")
 contingence_table_CTCF_prox
 
 rownames(contingence_table_CTCF_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
@@ -792,15 +837,20 @@ testChi2_CTCF_prox
 
 #### Chd8
 ### Chd8 au niveau distal
+nb_pb_hors_peaks_Chd8_distal <- nb_pb_region_distale_mm10 - nb_pb_peaks_Chd8_distal
+nb_pb_hors_peaks_Chd8_distal
+nb_pb_hors_peaks_Chd8_NON_distal <- nb_pb_genome_sans_distale - nb_pb_peaks_Chd8_non_distal
+nb_pb_hors_peaks_Chd8_NON_distal
+
 nombre_pb_aux_peaks_Chd8_dist <- c(nb_pb_peaks_Chd8_distal, nb_pb_peaks_Chd8_non_distal)
 nombre_pb_aux_peaks_Chd8_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
-nombre_pb_sur_genome_entier_dist
+nombre_pb_hors_peaks_Chd8_dist <- c(nb_pb_hors_peaks_Chd8_distal, nb_pb_hors_peaks_Chd8_NON_distal)
+nombre_pb_hors_peaks_Chd8_dist
 
-contingence_table_Chd8_dist <- data.frame(nombre_pb_aux_peaks_Chd8_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Chd8_dist <- data.frame(nombre_pb_aux_peaks_Chd8_dist, nombre_pb_hors_peaks_Chd8_dist, stringsAsFactors = FALSE)
 contingence_table_Chd8_dist
 
-colnames(contingence_table_Chd8_dist) <- c("nombre_pb_aux_peaks_Chd8", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Chd8_dist) <- c("nombre_pb_aux_peaks_Chd8", "nombre_pb_hors_des_peaks")
 contingence_table_Chd8_dist
 
 rownames(contingence_table_Chd8_dist) <- c("region_distale", "genome_complet_sans_region_distale")
@@ -814,15 +864,20 @@ test_Chi2_Chd8_distal
 
 
 ### Chd8 au niveau proximal : -400 : +100
+nb_pb_hors_peaks_Chd8_prox <- nb_pb_region_proximale_mm10_400 - nb_pb_peaks_Chd8_prox
+nb_pb_hors_peaks_Chd8_prox
+nb_pb_hors_peaks_Chd8_NON_prox <- nb_pb_genome_sans_proximale - nb_pb_peaks_Chd8_non_prox
+nb_pb_hors_peaks_Chd8_NON_prox
+
 nombre_pb_aux_peaks_Chd8_prox <- c(nb_pb_peaks_Chd8_prox, nb_pb_peaks_Chd8_non_prox)
 nombre_pb_aux_peaks_Chd8_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
-nombre_pb_sur_genome_entier_prox
+nombre_pb_hors_peaks_Chd8_prox <- c(nb_pb_hors_peaks_Chd8_prox, nb_pb_hors_peaks_Chd8_NON_prox)
+nombre_pb_hors_peaks_Chd8_prox
 
-contingence_table_Chd8_prox <- data.frame(nombre_pb_aux_peaks_Chd8_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Chd8_prox <- data.frame(nombre_pb_aux_peaks_Chd8_prox, nombre_pb_hors_peaks_Chd8_prox, stringsAsFactors = FALSE)
 contingence_table_Chd8_prox
 
-colnames(contingence_table_Chd8_prox) <- c("nombre_pb_aux_peaks_Chd8", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Chd8_prox) <- c("nombre_pb_aux_peaks_Chd8", "nombre_pb_hors_des_peaks")
 contingence_table_Chd8_prox
 
 rownames(contingence_table_Chd8_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
@@ -839,15 +894,20 @@ testChi2_Chd8_prox
 
 #### Chd8_Oct4_merge
 ### Chd8_Oct4_merge au niveau distal
+nb_pb_hors_peaks_Chd8_Oct4_distal <- nb_pb_region_distale_mm10 - nb_pb_peaks_Chd8_Oct4_merge_distal
+nb_pb_hors_peaks_Chd8_Oct4_distal
+nb_pb_hors_peaks_Chd8_Oct4_NON_distal <- nb_pb_genome_sans_distale - nb_pb_peaks_Chd8_Oct4_non_distal
+nb_pb_hors_peaks_Chd8_Oct4_NON_distal
+
 nombre_pb_aux_peaks_Chd8_Oct4_dist <- c(nb_pb_peaks_Chd8_Oct4_merge_distal, nb_pb_peaks_Chd8_Oct4_non_distal)
 nombre_pb_aux_peaks_Chd8_Oct4_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
-nombre_pb_sur_genome_entier_dist
+nombre_pb_hors_peaks_Chd8_Oct4_dist <- c(nb_pb_hors_peaks_Chd8_Oct4_distal, nb_pb_hors_peaks_Chd8_Oct4_NON_distal)
+nombre_pb_hors_peaks_Chd8_Oct4_dist
 
-contingence_table_Chd8_Oct4_dist <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Chd8_Oct4_dist <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_dist, nombre_pb_hors_peaks_Chd8_Oct4_dist, stringsAsFactors = FALSE)
 contingence_table_Chd8_Oct4_dist
 
-colnames(contingence_table_Chd8_Oct4_dist) <- c("nombre_pb_aux_peaks_Chd8_Oct4_inter", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Chd8_Oct4_dist) <- c("nombre_pb_aux_peaks_Chd8_Oct4_inter", "nombre_pb_hors_des_peaks")
 contingence_table_Chd8_Oct4_dist
 
 rownames(contingence_table_Chd8_Oct4_dist) <- c("region_distale", "genome_complet_sans_region_distale")
@@ -863,15 +923,20 @@ test_Chi2_Chd8_Oct4_inter_distal
 
 
 ### Chd8_Oct4_merge au niveau proximal : -400 : +100
+nb_pb_hors_peaks_Chd8_Oct4_prox <- nb_pb_region_proximale_mm10_400 - nb_pb_peaks_Chd8_Oct4_merge_prox
+nb_pb_hors_peaks_Chd8_Oct4_prox
+nb_pb_hors_peaks_Chd8_Oct4_NON_prox <- nb_pb_genome_sans_proximale - nb_pb_peaks_Chd8_Oct4_non_prox
+nb_pb_hors_peaks_Chd8_Oct4_NON_prox
+
 nombre_pb_aux_peaks_Chd8_Oct4_merge_prox <- c(nb_pb_peaks_Chd8_Oct4_merge_prox, nb_pb_peaks_Chd8_Oct4_non_prox)
 nombre_pb_aux_peaks_Chd8_Oct4_merge_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
-nombre_pb_sur_genome_entier_prox
+nombre_pb_hors_peaks_Chd8_Oct4_prox <- c(nb_pb_hors_peaks_Chd8_Oct4_prox, nb_pb_hors_peaks_Chd8_Oct4_NON_prox)
+nombre_pb_hors_peaks_Chd8_Oct4_prox
 
-contingence_table_Chd8_Oct4_inter_prox <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Chd8_Oct4_inter_prox <- data.frame(nombre_pb_aux_peaks_Chd8_Oct4_merge_prox, nombre_pb_hors_peaks_Chd8_Oct4_prox, stringsAsFactors = FALSE)
 contingence_table_Chd8_Oct4_inter_prox
 
-colnames(contingence_table_Chd8_Oct4_inter_prox) <- c("nombre_pb_aux_peaks_Chd8_Oct4_merge", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Chd8_Oct4_inter_prox) <- c("nombre_pb_aux_peaks_Chd8_Oct4_merge", "nombre_pb_hors_des_peaks")
 contingence_table_Chd8_Oct4_inter_prox
 
 rownames(contingence_table_Chd8_Oct4_inter_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
@@ -887,15 +952,20 @@ testChi2_Chd8_Oct4_inter_prox
 
 #### TBP_rep1_Pol2_Chd8
 ### TBP_rep1_Pol2_Chd8 au niveau distal
+nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_distal <- nb_pb_region_distale_mm10 - nb_pb_peaks_TBP_rep1_Pol2_Chd8_distal
+nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_distal
+nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_NON_distal <- nb_pb_genome_sans_distale - nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_distal
+nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_NON_distal
+
 nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_dist <- c(nb_pb_peaks_TBP_rep1_Pol2_Chd8_distal, nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_distal)
 nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
-nombre_pb_sur_genome_entier_dist
+nombre_pb_hors_peaks_TBP_rep1_Pol2_Chd8_dist <- c(nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_distal, nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_NON_distal)
+nombre_pb_hors_peaks_TBP_rep1_Pol2_Chd8_dist
 
-contingence_table_TBP_rep1_Pol2_Chd8_inter_dist <- data.frame(nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_TBP_rep1_Pol2_Chd8_inter_dist <- data.frame(nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_dist, nombre_pb_hors_peaks_TBP_rep1_Pol2_Chd8_dist, stringsAsFactors = FALSE)
 contingence_table_TBP_rep1_Pol2_Chd8_inter_dist
 
-colnames(contingence_table_TBP_rep1_Pol2_Chd8_inter_dist) <- c("nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_inter", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_TBP_rep1_Pol2_Chd8_inter_dist) <- c("nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_inter", "nombre_pb_hors_des_peaks")
 contingence_table_TBP_rep1_Pol2_Chd8_inter_dist
 
 rownames(contingence_table_TBP_rep1_Pol2_Chd8_inter_dist) <- c("region_distale", "genome_complet_sans_region_distale")
@@ -909,15 +979,21 @@ test_Chi2_TBP_rep1_Pol2_Chd8_inter_distal
 
 
 ### TBP_rep1_Pol2_Chd8 au niveau proximal : -400 : +100
+nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_prox <- nb_pb_region_proximale_mm10_400 - nb_pb_peaks_TBP_rep1_Pol2_Chd8_prox
+nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_prox
+nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_NON_prox <- nb_pb_genome_sans_proximale - nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_prox
+nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_NON_prox
+
+
 nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_prox <- c(nb_pb_peaks_TBP_rep1_Pol2_Chd8_prox, nb_pb_peaks_TBP_rep1_Pol2_Chd8_non_prox)
 nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
-nombre_pb_sur_genome_entier_prox
+nombre_pb_hors_peaks_TBP_rep1_Pol2_Chd8_prox <- c(nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_prox, nb_pb_hors_peaks_TBP_rep1_Pol2_Chd8_NON_prox)
+nombre_pb_hors_peaks_TBP_rep1_Pol2_Chd8_prox
 
-contingence_table_TBP_rep1_Pol2_Chd8_inter_prox <- data.frame(nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_TBP_rep1_Pol2_Chd8_inter_prox <- data.frame(nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_prox, nombre_pb_hors_peaks_TBP_rep1_Pol2_Chd8_prox, stringsAsFactors = FALSE)
 contingence_table_TBP_rep1_Pol2_Chd8_inter_prox
 
-colnames(contingence_table_TBP_rep1_Pol2_Chd8_inter_prox) <- c("nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_inter", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_TBP_rep1_Pol2_Chd8_inter_prox) <- c("nombre_pb_aux_peaks_TBP_rep1_Pol2_Chd8_inter", "nombre_pb_hors_des_peaks")
 contingence_table_TBP_rep1_Pol2_Chd8_inter_prox
 
 rownames(contingence_table_TBP_rep1_Pol2_Chd8_inter_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
@@ -934,15 +1010,20 @@ testChi2_TBP_rep1_Pol2_Chd8_inter_prox
 
 #### Oct4_CTCF_inter
 ### Oct4_CTCF_inter au niveau distal
+nb_pb_hors_peaks_Oct4_CTCF_distal <- nb_pb_region_distale_mm10 - nb_pb_peaks_Oct_CTCF_merge_distal
+nb_pb_hors_peaks_Oct4_CTCF_distal
+nb_pb_hors_peaks_Oct4_CTCF_NON_distal <- nb_pb_genome_sans_distale - nb_pb_peaks_Oct_CTCF_non_distal
+nb_pb_hors_peaks_Oct4_CTCF_NON_distal
+
 nombre_pb_aux_peaks_Oct4_CTCF_merge_dist <- c(nb_pb_peaks_Oct_CTCF_merge_distal, nb_pb_peaks_Oct_CTCF_non_distal)
 nombre_pb_aux_peaks_Oct4_CTCF_merge_dist
-nombre_pb_sur_genome_entier_dist <- c(nb_pb_region_distale_mm10, nb_pb_genome_sans_distale)
-nombre_pb_sur_genome_entier_dist
+nombre_pb_hors_peaks_Oct4_CTCF_dist <- c(nb_pb_hors_peaks_Oct4_CTCF_distal, nb_pb_hors_peaks_Oct4_CTCF_NON_distal)
+nombre_pb_hors_peaks_Oct4_CTCF_dist
 
-contingence_table_Oct4_CTCF_inter_dist <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_dist, nombre_pb_sur_genome_entier_dist, stringsAsFactors = FALSE)
+contingence_table_Oct4_CTCF_inter_dist <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_dist, nombre_pb_hors_peaks_Oct4_CTCF_dist, stringsAsFactors = FALSE)
 contingence_table_Oct4_CTCF_inter_dist
 
-colnames(contingence_table_Oct4_CTCF_inter_dist) <- c("nombre_pb_aux_peaks_Oct4_CTCF_inter", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Oct4_CTCF_inter_dist) <- c("nombre_pb_aux_peaks_Oct4_CTCF_inter", "nombre_pb_hors_des_peaks")
 contingence_table_Oct4_CTCF_inter_dist
 
 rownames(contingence_table_Oct4_CTCF_inter_dist) <- c("region_distale", "genome_complet_sans_region_distale")
@@ -956,15 +1037,20 @@ test_Chi2_Oct4_CTCF_inter_distal
 
 
 ### Oct4_CTCF_inter au niveau proximal : -400 : +100
+nb_pb_hors_peaks_Oct4_CTCF_prox <- nb_pb_region_proximale_mm10_400 - nb_pb_peaks_Oct_CTCF_merge_prox
+nb_pb_hors_peaks_Oct4_CTCF_prox
+nb_pb_hors_peaks_Oct4_CTCF_NON_prox <- nb_pb_genome_sans_proximale - nb_pb_peaks_Oct_CTCF_non_prox
+nb_pb_hors_peaks_Oct4_CTCF_NON_prox
+
 nombre_pb_aux_peaks_Oct4_CTCF_merge_prox <- c(nb_pb_peaks_Oct_CTCF_merge_prox, nb_pb_peaks_Oct_CTCF_non_prox)
 nombre_pb_aux_peaks_Oct4_CTCF_merge_prox
-nombre_pb_sur_genome_entier_prox <- c(nb_pb_region_proximale_mm10_400, nb_pb_genome_sans_proximale)
-nombre_pb_sur_genome_entier_prox
+nombre_pb_hors_peaks_Oct4_CTCF_prox <- c(nb_pb_hors_peaks_Oct4_CTCF_prox, nb_pb_hors_peaks_Oct4_CTCF_NON_prox)
+nombre_pb_hors_peaks_Oct4_CTCF_prox
 
-contingence_table_Oct4_CTCF_inter_prox <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_prox, nombre_pb_sur_genome_entier_prox, stringsAsFactors = FALSE)
+contingence_table_Oct4_CTCF_inter_prox <- data.frame(nombre_pb_aux_peaks_Oct4_CTCF_merge_prox, nombre_pb_hors_peaks_Oct4_CTCF_prox, stringsAsFactors = FALSE)
 contingence_table_Oct4_CTCF_inter_prox
 
-colnames(contingence_table_Oct4_CTCF_inter_prox) <- c("nombre_pb_aux_peaks_Oct4_CTCF_inter", "nombre_pb_sur_genome_entier")
+colnames(contingence_table_Oct4_CTCF_inter_prox) <- c("nombre_pb_aux_peaks_Oct4_CTCF_inter", "nombre_pb_hors_des_peaks")
 contingence_table_Oct4_CTCF_inter_prox
 
 rownames(contingence_table_Oct4_CTCF_inter_prox) <- c("region_proximale", "genome_complet_sans_region_proximale")
